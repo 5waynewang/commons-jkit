@@ -21,7 +21,7 @@ public class PoolingHttpClientsTest {
 	@Test
 	public void testGet() {
 		HttpInvokeResult result = PoolingHttpClients.get("http://www.baidu.com");
-		if (result.isOK()) {
+		if (result.isSuccess()) {
 			System.out.println(result.getContent());
 		} else if (result.getException() != null) {
 			System.out.println(result);
@@ -38,7 +38,7 @@ public class PoolingHttpClientsTest {
 		params.put("stringArray", new String[] { "str1", "str2" });
 
 		HttpInvokeResult result = PoolingHttpClients.post("http://www.baidu.com", params);
-		if (result.isOK()) {
+		if (result.isSuccess()) {
 			System.out.println(result.getContent());
 		} else if (result.getException() != null) {
 			System.out.println(result);

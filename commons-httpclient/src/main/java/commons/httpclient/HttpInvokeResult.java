@@ -7,15 +7,6 @@ import org.apache.http.HttpResponse;
  * @since 8:05:22 PM Jul 28, 2014
  */
 public class HttpInvokeResult {
-
-	public static final int SC_OK = 200;
-
-	public static final int SC_NOT_MODIFIED = 304;
-
-	public static final int SC_NOT_FOUND = 404;
-
-	public static final int SC_SERVICE_UNAVAILABLE = 503;
-
 	private HttpResponse response;
 	private String url = null;
 	private int statusCode = -1;
@@ -56,8 +47,8 @@ public class HttpInvokeResult {
 		return this.e;
 	}
 
-	public boolean isOK() {
-		return this.statusCode == SC_OK;
+	public boolean isSuccess() {
+		return this.statusCode == 200;
 	}
 
 	String FORMAT = "URL:[%s],StatusCode:[%s],Content[%s],Reason[%s]";

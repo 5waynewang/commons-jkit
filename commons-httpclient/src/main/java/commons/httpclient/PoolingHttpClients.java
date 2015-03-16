@@ -4,7 +4,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -141,12 +140,12 @@ public class PoolingHttpClients {
 		return post(url, params, timeout, null);
 	}
 
-	public static HttpInvokeResult post(String url, Map<String, Object> params, List<Header> headers) {
+	public static HttpInvokeResult post(String url, Map<String, Object> params, Collection<Header> headers) {
 		return post(url, params, 0, headers);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static HttpInvokeResult post(String url, Map<String, Object> params, long timeout, List<Header> headers) {
+	public static HttpInvokeResult post(String url, Map<String, Object> params, long timeout, Collection<Header> headers) {
 		if (params == null || params.isEmpty()) {
 			return post(url, Collections.EMPTY_LIST, timeout, headers);
 		}
@@ -177,11 +176,11 @@ public class PoolingHttpClients {
 		return post(url, params, timeout, null);
 	}
 
-	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, List<Header> headers) {
+	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, Collection<Header> headers) {
 		return post(url, params, 0, headers);
 	}
 
-	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, long timeout, List<Header> headers) {
+	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, long timeout, Collection<Header> headers) {
 		final HttpPost httpPost = new HttpPost(url);
 
 		if (params != null && !params.isEmpty()) {
