@@ -159,5 +159,6 @@
 	
 	<modules>
 		<module>commons-httpclient</module>
+		<module>commons-fqueue</module>
 	</modules>
 </project>
