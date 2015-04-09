@@ -1,3 +1,3 @@
-call mvn clean -Dmaven.test.skip eclipse:eclipse
+call mvn -U eclipse:eclipse
 
 pause
