@@ -3,8 +3,7 @@
  */
 package wcommons.lang;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import commons.lang.NumberUtils;
@@ -88,13 +87,9 @@ public class NumberUtilsTests {
 	public void testParseBinaryString() {
 		Assert.assertEquals(NumberUtils.parseBinaryString("1"), 1);
 		Assert.assertEquals(NumberUtils.parseBinaryString("10"), 2);
-		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Byte.MAX_VALUE)),
-				Byte.MAX_VALUE);
-		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Short.MAX_VALUE)),
-				Short.MAX_VALUE);
-		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Integer.MAX_VALUE)),
-				Integer.MAX_VALUE);
-		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Long.MAX_VALUE)),
-				Long.MAX_VALUE);
+		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Byte.MAX_VALUE)), Byte.MAX_VALUE);
+		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Short.MAX_VALUE)), Short.MAX_VALUE);
+		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Integer.MAX_VALUE)), Integer.MAX_VALUE);
+		Assert.assertEquals(NumberUtils.parseBinaryString(Long.toBinaryString(Long.MAX_VALUE)), Long.MAX_VALUE);
 	}
 }

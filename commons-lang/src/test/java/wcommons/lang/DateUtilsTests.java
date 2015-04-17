@@ -6,8 +6,7 @@ package wcommons.lang;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import commons.lang.DateStatics;
