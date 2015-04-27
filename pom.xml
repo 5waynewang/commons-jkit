@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>commons-jkit</groupId>
 	<artifactId>commons-jkit</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.11-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>commons-jkit v${project.version}</name>
 

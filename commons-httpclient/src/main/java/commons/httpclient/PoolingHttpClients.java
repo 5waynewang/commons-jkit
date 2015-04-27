@@ -25,6 +25,7 @@ import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
@@ -69,6 +70,16 @@ public class PoolingHttpClients {
 				return HttpClientConfig.HTTP_KEEPIDLE_DURATION;
 			}
 		});
+		// 增加 redirect 策略
+		httpClientBuilderBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
+			@Override
+			protected boolean isRedirectable(String method) {
+				if (HttpPost.METHOD_NAME.equalsIgnoreCase(method)) {
+					return true;
+				}
+				return super.isRedirectable(method);
+			}
+		});
 		httpClient = httpClientBuilderBuilder.build();
 
 		final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
@@ -77,8 +88,12 @@ public class PoolingHttpClients {
 		requestConfig = requestConfigBuilder.build();
 	}
 
-	public static CloseableHttpClient getHttpclient() {
+	public static CloseableHttpClient getDefaultHttpclient() {
 		return httpClient;
+	}
+
+	public static RequestConfig getDefaultRequestConfig() {
+		return requestConfig;
 	}
 
 	public static HttpInvokeResult get(String url) {
@@ -111,12 +126,13 @@ public class PoolingHttpClients {
 		return proxyGet(url, timeout, null, null);
 	}
 
-	public static HttpInvokeResult proxyGet(String url, long timeout, Collection<Header> headers, String proxy) {
+	public static HttpInvokeResult proxyGet(String url, long timeout, Collection<Header> headers,
+			String proxy) {
 		return invoke(createHttpGet(url, headers), timeout, null);
 	}
 
 	static void addHeaders(Collection<Header> headers, HttpRequestBase request) {
-		if (headers == null  || headers.isEmpty()) {
+		if (headers == null || headers.isEmpty()) {
 			return;
 		}
 		for (final Header header : headers) {
@@ -126,7 +142,7 @@ public class PoolingHttpClients {
 			request.addHeader(header);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static HttpInvokeResult post(String url) {
 		return post(url, Collections.EMPTY_MAP, 0);
@@ -140,12 +156,14 @@ public class PoolingHttpClients {
 		return post(url, params, timeout, null);
 	}
 
-	public static HttpInvokeResult post(String url, Map<String, Object> params, Collection<Header> headers) {
+	public static HttpInvokeResult post(String url, Map<String, Object> params,
+			Collection<Header> headers) {
 		return post(url, params, 0, headers);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static HttpInvokeResult post(String url, Map<String, Object> params, long timeout, Collection<Header> headers) {
+	public static HttpInvokeResult post(String url, Map<String, Object> params, long timeout,
+			Collection<Header> headers) {
 		if (params == null || params.isEmpty()) {
 			return post(url, Collections.EMPTY_LIST, timeout, headers);
 		}
@@ -153,15 +171,18 @@ public class PoolingHttpClients {
 		for (final Map.Entry<String, Object> entry : params.entrySet()) {
 			if (entry.getValue() == null) {
 				nvps.add(new BasicNameValuePair(entry.getKey(), null));
-			} else if (entry.getValue() instanceof Object[]) {
+			}
+			else if (entry.getValue() instanceof Object[]) {
 				for (Object v : (Object[]) entry.getValue()) {
 					if (v == null) {
 						nvps.add(new BasicNameValuePair(entry.getKey(), null));
-					} else {
+					}
+					else {
 						nvps.add(new BasicNameValuePair(entry.getKey(), v.toString()));
 					}
 				}
-			} else {
+			}
+			else {
 				nvps.add(new BasicNameValuePair(entry.getKey(), entry.getValue().toString()));
 			}
 		}
@@ -176,19 +197,23 @@ public class PoolingHttpClients {
 		return post(url, params, timeout, null);
 	}
 
-	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, Collection<Header> headers) {
+	public static HttpInvokeResult post(String url, Collection<NameValuePair> params,
+			Collection<Header> headers) {
 		return post(url, params, 0, headers);
 	}
 
-	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, long timeout, Collection<Header> headers) {
+	public static HttpInvokeResult post(String url, Collection<NameValuePair> params, long timeout,
+			Collection<Header> headers) {
 		final HttpPost httpPost = new HttpPost(url);
 
 		if (params != null && !params.isEmpty()) {
 			try {
-				HttpEntity entity = new UrlEncodedFormEntity(params, Charset.forName(HttpClientConfig.HTTP_CHARSET));
+				HttpEntity entity = new UrlEncodedFormEntity(params,
+						Charset.forName(HttpClientConfig.HTTP_CHARSET));
 
 				httpPost.setEntity(entity);
-			} catch (RuntimeException e) {
+			}
+			catch (RuntimeException e) {
 				log.error("Error to setEntity", e);
 				throw e;
 			}
@@ -232,7 +257,7 @@ public class PoolingHttpClients {
 
 		HttpInvokeResult result;
 
-		final RequestConfig.Builder builder = RequestConfig.copy(requestConfig);
+		final RequestConfig.Builder builder = RequestConfig.copy(getDefaultRequestConfig());
 		if (timeout > 0) {
 			builder.setSocketTimeout((int) timeout);
 		}
@@ -244,7 +269,7 @@ public class PoolingHttpClients {
 		request.setConfig(builder.build());
 
 		try {
-			result = httpClient.execute(request, responseHandler);
+			result = getDefaultHttpclient().execute(request, responseHandler);
 			if (result.getException() != null) {
 				request.abort();
 				log.error("请求失败,statusCode=" + result.getStatusCode() + ",url=" + url + ","
@@ -253,7 +278,8 @@ public class PoolingHttpClients {
 			result.setUrl(request.getURI().toString());
 			request.releaseConnection();
 			return result;
-		} catch (final Throwable e) {
+		}
+		catch (final Throwable e) {
 			request.abort();
 			log.error("请求失败,url=" + url + "," + e.getMessage());
 			result = new HttpInvokeResult();
@@ -261,7 +287,8 @@ public class PoolingHttpClients {
 			result.setException(e);
 			result.setReason(e.getMessage());
 			return result;
-		} finally {
+		}
+		finally {
 			request.reset();
 		}
 	}
