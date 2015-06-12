@@ -77,8 +77,9 @@ public class LogEntity {
 		// 文件不存在，创建文件
 		if (file.exists() == false) {
 			createLogEntity();
-			// modified by lucifer // 异步改成同步，防止快速切换文件写时，没有走下面代码的分支
+			// 如果写的够快，会和异步执行的create冲突，导致 mappedByteBuffer 还未赋值就执行write了
 //			FileRunner.addCreateFile(Integer.toString(fileNumber + 1));
+			// modified by lucifer // 异步改成同步 
 			FileRunner.create(String.format(FILENAME_FORMAT, baseDir, fileNumber+1), this.fileLimitLength);
 		} else {
 			raFile = new RandomAccessFile(file, "rwd");
