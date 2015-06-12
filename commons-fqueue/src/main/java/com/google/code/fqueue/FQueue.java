@@ -15,17 +15,13 @@
  */
 package com.google.code.fqueue;
 
-import java.io.IOException;
 import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.code.fqueue.exception.FileFormatException;
 
 /**
  * 基于文件系统的持久化队列
@@ -39,7 +35,8 @@ public class FQueue extends AbstractQueue<byte[]> implements Queue<byte[]>,
 	private static final long serialVersionUID = -5960741434564940154L;
 	private FSQueue fsQueue = null;
 	final Logger log = LoggerFactory.getLogger(FQueue.class);
-	private Lock lock = new ReentrantReadWriteLock().writeLock();
+//	private Lock lock = new ReentrantReadWriteLock().writeLock();
+	private ReentrantLock lock = new ReentrantLock();
 
 	public FQueue(String path) throws Exception {
 		fsQueue = new FSQueue(path, 1024 * 1024 * 300);
@@ -56,19 +53,24 @@ public class FQueue extends AbstractQueue<byte[]> implements Queue<byte[]>,
 
 	@Override
 	public int size() {
-		return fsQueue.getQueuSize();
+		final ReentrantLock lock = this.lock;
+		lock.lock();
+		try {
+			return fsQueue.getQueuSize();
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
 	public boolean offer(byte[] e) {
+		final ReentrantLock lock = this.lock;
+		lock.lock();
 		try {
-			lock.lock();
 			fsQueue.add(e);
 			return true;
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (FileFormatException e1) {
-			e1.printStackTrace();
+		} catch (Exception ex) {
+			log.error("Error to offer to FSQueue", ex);
 		} finally {
 			lock.unlock();
 		}
@@ -82,14 +84,12 @@ public class FQueue extends AbstractQueue<byte[]> implements Queue<byte[]>,
 
 	@Override
 	public byte[] poll() {
+		final ReentrantLock lock = this.lock;
+		lock.lock();
 		try {
-			lock.lock();
 			return fsQueue.readNextAndRemove();
-		} catch (IOException e) {
-			log.error(e.getMessage(), e);
-			return null;
-		} catch (FileFormatException e) {
-			log.error(e.getMessage(), e);
+		} catch (Exception ex) {
+			log.error("Error to poll from FSQueue", ex);
 			return null;
 		} finally {
 			lock.unlock();
@@ -97,8 +97,12 @@ public class FQueue extends AbstractQueue<byte[]> implements Queue<byte[]>,
 	}
 
 	public void close() {
-		if (fsQueue != null) {
+		final ReentrantLock lock = this.lock;
+		lock.lock();
+		try {
 			fsQueue.close();
+		} finally {
+			lock.unlock();
 		}
 	}
 }

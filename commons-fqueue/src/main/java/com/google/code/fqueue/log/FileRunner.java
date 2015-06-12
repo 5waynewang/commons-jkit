@@ -35,7 +35,7 @@ import com.google.code.fqueue.util.MappedByteBufferUtil;
  * @version $Id: FileRunner.java 74 2012-03-21 13:51:26Z sunli1223@gmail.com $
  */
 public class FileRunner implements Runnable {
-    private final Logger log = LoggerFactory.getLogger(FileRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileRunner.class);
     // 删除队列
     private static final Queue<String> deleteQueue = new ConcurrentLinkedQueue<String>();
     // 新创建队列
@@ -66,13 +66,20 @@ public class FileRunner implements Runnable {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    log.error(e.getMessage(), e);
+                	logger.warn(e.getMessage(), e);
                 }
                 continue;
             }
             if (filePath != null) {
                 File delFile = new File(filePath);
-                delFile.delete();
+                // 删除失败
+                if (!delFile.delete()) {
+                	logger.warn("failed to delete {}", filePath);
+                }
+                // 删除成功
+                else if (logger.isInfoEnabled()) {
+                	logger.info("success to delete {}", filePath);
+                }
             }
 
             if (fileNum != null) {
@@ -80,14 +87,18 @@ public class FileRunner implements Runnable {
                 try {
                     create(filePath);
                 } catch (IOException e) {
-                    log.error("预创建数据文件失败", e);
+                	logger.error("预创建数据文件失败:" + filePath, e);
                 }
             }
         }
 
     }
-
+    
     private boolean create(String path) throws IOException {
+    	return create(path, this.fileLimitLength);
+    }
+
+    public static boolean create(String path, int fileLimitLength) throws IOException {
         File file = new File(path);
         if (file.exists() == false) {
             if (file.createNewFile() == false) {
@@ -95,15 +106,24 @@ public class FileRunner implements Runnable {
             }
             RandomAccessFile raFile = new RandomAccessFile(file, "rwd");
             FileChannel fc = raFile.getChannel();
-            MappedByteBuffer mappedByteBuffer = fc.map(MapMode.READ_WRITE, 0, this.fileLimitLength);
-            mappedByteBuffer.put(LogEntity.MAGIC.getBytes());
-            mappedByteBuffer.putInt(1);// 8 version
-            mappedByteBuffer.putInt(-1);// 12next fileindex
-            mappedByteBuffer.putInt(-2);// 16
-            mappedByteBuffer.force();
-            MappedByteBufferUtil.clean(mappedByteBuffer);
-            fc.close();
-            raFile.close();
+            try {
+	            MappedByteBuffer mappedByteBuffer = fc.map(MapMode.READ_WRITE, 0, fileLimitLength);
+	            mappedByteBuffer.put(LogEntity.MAGIC.getBytes());
+	            mappedByteBuffer.putInt(1);// 8 version
+	            mappedByteBuffer.putInt(-1);// 12next fileindex
+	            mappedByteBuffer.putInt(-2);// 16
+	            mappedByteBuffer.force();
+	            MappedByteBufferUtil.clean(mappedByteBuffer);
+	            
+	            if (logger.isInfoEnabled()) {
+	            	logger.info("success to create {}", file.getAbsolutePath());
+	            }
+            } catch(Exception e) {
+            	throw new IOException("Error to create " + file.getAbsolutePath(), e);
+            } finally {
+            	fc.close();
+            	raFile.close();
+            }
             return true;
         } else {
             return false;

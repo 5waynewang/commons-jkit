@@ -20,9 +20,10 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.code.fqueue.exception.FSQueueClosedException;
 import com.google.code.fqueue.exception.FileEOFException;
 import com.google.code.fqueue.exception.FileFormatException;
 import com.google.code.fqueue.log.FileRunner;
@@ -37,7 +38,7 @@ import com.google.code.fqueue.log.LogIndex;
  * @version $Id: FSQueue.java 2 2011-07-31 12:25:36Z sunli1223@gmail.com $
  */
 public class FSQueue {
-	private static final Log log = LogFactory.getLog(FSQueue.class);
+	private static final Logger logger = LoggerFactory.getLogger(FSQueue.class);
 	public static final String filePrefix = "fqueue";
 	private int fileLimitLength = 1024 * 1024 * 100;
 	private static final String dbName = "icqueue.db";
@@ -55,6 +56,9 @@ public class FSQueue {
 	 */
 	private int readerIndex = -1;
 	private int writerIndex = -1;
+	
+	private boolean isClosed = false;
+	private String baseDir;
 
 	public FSQueue(String path) throws Exception {
 		this(path, 1024 * 1024 * 150);
@@ -74,40 +78,39 @@ public class FSQueue {
 		File fileDir = new File(dir);
 		if (fileDir.exists() == false && fileDir.isDirectory() == false) {
 			if (fileDir.mkdirs() == false) {
-				throw new IOException("create dir error");
+				throw new IOException("create dir error:" + dir);
 			}
 		}
 		path = fileDir.getAbsolutePath();
+		baseDir = path + fileSeparator + filePrefix + "data_";
 		// 打开db
 		db = new LogIndex(path + fileSeparator + dbName);
 		writerIndex = db.getWriterIndex();
 		readerIndex = db.getReaderIndex();
-		writerHandle = createLogEntity(path + fileSeparator + filePrefix + "data_" + writerIndex + ".idb", db,
-				writerIndex);
+		writerHandle = createLogEntity(baseDir, db, writerIndex);
 		if (readerIndex == writerIndex) {
 			readerHandle = writerHandle;
 		} else {
-			readerHandle = createLogEntity(path + fileSeparator + filePrefix + "data_" + readerIndex + ".idb", db,
-					readerIndex);
+			readerHandle = createLogEntity(baseDir, db, readerIndex);
 
 		}
-		FileRunner deleteFileRunner = new FileRunner(path + fileSeparator + filePrefix + "data_", fileLimitLength);
+		FileRunner deleteFileRunner = new FileRunner(baseDir, fileLimitLength);
 		executor.execute(deleteFileRunner);
 	}
 
 	/**
 	 * 创建或者获取一个数据读写实例
 	 * 
-	 * @param dbpath
+	 * @param baseDir
 	 * @param db
 	 * @param fileNumber
 	 * @return
 	 * @throws IOException
 	 * @throws FileFormatException
 	 */
-	private LogEntity createLogEntity(String dbpath, LogIndex db, int fileNumber) throws IOException,
+	private LogEntity createLogEntity(String baseDir, LogIndex db, int fileNumber) throws IOException,
 			FileFormatException {
-		return new LogEntity(dbpath, db, fileNumber, this.fileLimitLength);
+		return new LogEntity(baseDir, db, fileNumber, this.fileLimitLength);
 	}
 
 	/**
@@ -117,14 +120,17 @@ public class FSQueue {
 	 * @throws FileFormatException
 	 */
 	private void rotateNextLogWriter() throws IOException, FileFormatException {
+		final int originWriterIndex = writerIndex;
 		writerIndex = writerIndex + 1;
 		writerHandle.putNextFile(writerIndex);
 		if (readerHandle != writerHandle) {
 			writerHandle.close();
 		}
 		db.putWriterIndex(writerIndex);
-		writerHandle = createLogEntity(path + fileSeparator + filePrefix + "data_" + writerIndex + ".idb", db,
-				writerIndex);
+		writerHandle = createLogEntity(baseDir, db, writerIndex);
+		if (logger.isInfoEnabled()) {
+			logger.info("rotateNextLogWriter from {} to {}", originWriterIndex, writerIndex);
+		}
 	}
 
 	/**
@@ -147,6 +153,8 @@ public class FSQueue {
 	 * @throws FileFormatException
 	 */
 	public void add(byte[] message) throws IOException, FileFormatException {
+		assertIfClosed();
+		
 		short status = writerHandle.write(message);
 		if (status == LogEntity.WRITEFULL) {
 			rotateNextLogWriter();
@@ -164,6 +172,8 @@ public class FSQueue {
 	 * @throws FileFormatException
 	 */
 	public byte[] readNextAndRemove() throws IOException, FileFormatException {
+		assertIfClosed();
+		
 		byte[] b = null;
 		try {
 			b = readerHandle.readNextAndRemove();
@@ -178,13 +188,17 @@ public class FSQueue {
 			if (writerHandle.getCurrentFileNumber() == nextfile) {
 				readerHandle = writerHandle;
 			} else {
-				readerHandle = createLogEntity(path + fileSeparator + filePrefix + "data_" + nextfile + ".idb", db,
-						nextfile);
+				readerHandle = createLogEntity(baseDir, db, nextfile);
 			}
+			
+			if (logger.isInfoEnabled()) {
+				logger.info("rotateNextLogReader from {} to {}", deleteNum, nextfile);
+			}
+			
 			try {
 				b = readerHandle.readNextAndRemove();
 			} catch (FileEOFException e1) {
-				log.error("read new log file FileEOFException error occurred",e1);
+				logger.error("read new log file FileEOFException error occurred",e1);
 			}
 		}
 		if (b != null) {
@@ -194,11 +208,24 @@ public class FSQueue {
 	}
 
 	public void close() {
+		if (isClosed) {
+			return;
+		}
 		readerHandle.close();
 		writerHandle.close();
+		db.close();
+		isClosed = true;
 	}
 
 	public int getQueuSize() {
+		assertIfClosed();
+		
 		return db.getSize();
+	}
+	
+	void assertIfClosed() {
+		if (isClosed) {
+			throw new FSQueueClosedException(path);
+		}
 	}
 }

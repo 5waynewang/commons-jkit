@@ -82,7 +82,7 @@ public class LogIndex {
 		} else {
 			dbRandFile = new RandomAccessFile(dbFile, "rwd");
 			if (dbRandFile.length() < 32) {
-				throw new FileFormatException("file format error");
+				throw new FileFormatException("file format error, please check file:" + path);
 			}
 			byte[] b = new byte[this.dbFileLimitLength];
 			dbRandFile.read(b);

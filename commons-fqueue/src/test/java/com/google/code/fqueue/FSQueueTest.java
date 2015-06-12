@@ -29,8 +29,8 @@ public class FSQueueTest extends TestCase {
     private static FQueue queue;
     static {
         try {
-            queue = new FQueue("db");
-            queue.clear();
+            queue = new FQueue("C:\\Users\\lucifer\\Downloads\\db", 1024);
+//            queue.clear();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -109,6 +109,30 @@ public class FSQueueTest extends TestCase {
         assertEquals(queue.size(), 2);
         queue.clear();
         assertNull(queue.poll());
+    }
+    
+    public void testPollLoop() {
+    	long index = 0;
+        long start = System.currentTimeMillis();
+    	while (true) {
+    		final byte[] data = queue.poll();
+    		if (data == null) {
+    			break;
+    		}
+    		assertEquals(new String(data), "1234567890");
+    		++index;
+    	}
+        System.out.println("Fqueue读取10字节"+index+"次:" + (System.currentTimeMillis() - start));
+    }
+    
+    public void testAddLoop() {
+        String message = "1234567890";
+        byte[] bytes = message.getBytes();
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
+            queue.add(bytes);
+        }
+        System.out.println("Fqueue写入10字节10000000次:" + (System.currentTimeMillis() - start));
     }
 
     public void testFqueueVSList() {

@@ -38,7 +38,7 @@ import com.google.code.fqueue.exception.FileFormatException;
  *@version $Id: LogEntity.java 2 2011-07-31 12:25:36Z sunli1223@gmail.com $
  */
 public class LogEntity {
-	private final Logger log = LoggerFactory.getLogger(LogEntity.class);
+	private final Logger logger = LoggerFactory.getLogger(LogEntity.class);
 	public static final byte WRITESUCCESS = 1;
 	public static final byte WRITEFAILURE = 2;
 	public static final byte WRITEFULL = 3;
@@ -62,21 +62,28 @@ public class LogEntity {
 	private int nextFile = -1;
 	private int endPosition = -1;
 	private int currentFileNumber = -1;
+	
+	static final String FILENAME_FORMAT = "%s%s.idb";
 
-	public LogEntity(String path, LogIndex db, int fileNumber,
+	public LogEntity(String baseDir, LogIndex db, int fileNumber,
 			int fileLimitLength) throws IOException, FileFormatException {
 		this.currentFileNumber = fileNumber;
 		this.fileLimitLength = fileLimitLength;
 		this.db = db;
+		
+		final String path = String.format(FILENAME_FORMAT, baseDir, fileNumber);
+		
 		file = new File(path);
 		// 文件不存在，创建文件
 		if (file.exists() == false) {
 			createLogEntity();
-			FileRunner.addCreateFile(Integer.toString(fileNumber + 1));
+			// modified by lucifer // 异步改成同步，防止快速切换文件写时，没有走下面代码的分支
+//			FileRunner.addCreateFile(Integer.toString(fileNumber + 1));
+			FileRunner.create(String.format(FILENAME_FORMAT, baseDir, fileNumber+1), this.fileLimitLength);
 		} else {
 			raFile = new RandomAccessFile(file, "rwd");
 			if (raFile.length() < LogEntity.messageStartPosition) {
-				throw new FileFormatException("file format error");
+				throw new FileFormatException("file format error, please check file:" + path);
 			}
 			fc = raFile.getChannel();
 			mappedByteBuffer = fc.map(MapMode.READ_WRITE, 0,
@@ -86,7 +93,7 @@ public class LogEntity {
 			mappedByteBuffer.get(b);
 			magicString = new String(b);
 			if (magicString.equals(MAGIC) == false) {
-				throw new FileFormatException("file format error");
+				throw new FileFormatException("file format error, please check file:" + path);
 			}
 			// version
 			version = mappedByteBuffer.getInt();
@@ -152,19 +159,27 @@ public class LogEntity {
 		if (file.createNewFile() == false) {
 			return false;
 		}
-		raFile = new RandomAccessFile(file, "rwd");
-		fc = raFile.getChannel();
-		mappedByteBuffer = fc.map(MapMode.READ_WRITE, 0, this.fileLimitLength);
-		mappedByteBuffer.put(MAGIC.getBytes());
-		mappedByteBuffer.putInt(version);// 8 version
-		mappedByteBuffer.putInt(nextFile);// 12next fileindex
-		mappedByteBuffer.putInt(endPosition);// 16
-		mappedByteBuffer.force();
-		this.magicString = MAGIC;
-		this.writerPosition = LogEntity.messageStartPosition;
-		this.readerPosition = LogEntity.messageStartPosition;
-		db.putWriterPosition(this.writerPosition);
-		return true;
+		try {
+			raFile = new RandomAccessFile(file, "rwd");
+			fc = raFile.getChannel();
+			mappedByteBuffer = fc.map(MapMode.READ_WRITE, 0, this.fileLimitLength);
+			mappedByteBuffer.put(MAGIC.getBytes());
+			mappedByteBuffer.putInt(version);// 8 version
+			mappedByteBuffer.putInt(nextFile);// 12next fileindex
+			mappedByteBuffer.putInt(endPosition);// 16
+			mappedByteBuffer.force();
+			this.magicString = MAGIC;
+			this.writerPosition = LogEntity.messageStartPosition;
+			this.readerPosition = LogEntity.messageStartPosition;
+			db.putWriterPosition(this.writerPosition);
+			
+			if (logger.isInfoEnabled()) {
+				logger.info("success to create {}", file.getAbsolutePath());
+			}
+			return true;
+		} catch (Exception e) {
+			throw new IOException("Error to create " + file.getAbsolutePath(), e);
+		}
 	}
 
 	/**
@@ -257,7 +272,7 @@ public class LogEntity {
 			fc.close();
 			raFile.close();
 		} catch (IOException e) {
-			log.error("close logentity file error:", e);
+			logger.error("error to close logentity file:" + file.getAbsolutePath(), e);
 		}
 	}
 
