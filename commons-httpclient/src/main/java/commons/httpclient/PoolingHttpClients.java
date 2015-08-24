@@ -85,6 +85,7 @@ public class PoolingHttpClients {
 		final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(HttpClientConfig.HTTP_CONN_TIMEOUT);
 		requestConfigBuilder.setSocketTimeout(HttpClientConfig.HTTP_SO_TIMEOUT);
+//		requestConfigBuilder.setCircularRedirectsAllowed(true);
 		requestConfig = requestConfigBuilder.build();
 	}
 
@@ -112,8 +113,9 @@ public class PoolingHttpClients {
 		return invoke(createHttpGet(url, headers), timeout);
 	}
 
-	static HttpGet createHttpGet(String url, Collection<Header> headers) {
+	public static HttpGet createHttpGet(String url, Collection<Header> headers) {
 		final HttpGet httpGet = new HttpGet(url);
+//		httpGet.setProtocolVersion(new ProtocolVersion("HTTP", 1, 0));
 		addHeaders(headers, httpGet);
 		return httpGet;
 	}
@@ -131,16 +133,16 @@ public class PoolingHttpClients {
 		return invoke(createHttpGet(url, headers), timeout, null);
 	}
 
-	static void addHeaders(Collection<Header> headers, HttpRequestBase request) {
-		if (headers == null || headers.isEmpty()) {
-			return;
-		}
-		for (final Header header : headers) {
-			if (header == null) {
-				continue;
+	public static HttpRequestBase addHeaders(Collection<Header> headers, HttpRequestBase request) {
+		if (headers != null && !headers.isEmpty()) {
+			for (final Header header : headers) {
+				if (header == null) {
+					continue;
+				}
+				request.addHeader(header);
 			}
-			request.addHeader(header);
 		}
+		return request;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -245,11 +247,11 @@ public class PoolingHttpClients {
 		return invoke(httpPost, timeout);
 	}
 
-	static HttpInvokeResult invoke(HttpRequestBase request, long timeout) {
+	public static HttpInvokeResult invoke(HttpRequestBase request, long timeout) {
 		return invoke(request, timeout, null);
 	}
 
-	static HttpInvokeResult invoke(HttpRequestBase request, long timeout, String proxy) {
+	public static HttpInvokeResult invoke(HttpRequestBase request, long timeout, String proxy) {
 		final String url = request.getURI().toString();
 		if (log.isDebugEnabled()) {
 			log.debug("invoke url:" + url);

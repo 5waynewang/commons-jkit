@@ -10,6 +10,8 @@ import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.Test;
@@ -49,6 +51,18 @@ public class PoolingHttpClientsTest {
 		} else {
 			System.out.println(result);
 		}
+	}
+	
+	@Test
+	public void testGet2() {
+		final String url = "http://www.xiangqu.com/advertise/qqAd?muid=472cba8f94b51247b47b63c95987f89d&click_time=1440379992&appid=575466337&click_id=f309e6a24b5b13493c9f610a9d2b83b8&app_type=ios&advertiser_id=200997";
+		
+		final HttpGet httpGet = PoolingHttpClients.createHttpGet(url, null);
+		
+		final HttpInvokeResult result = PoolingHttpClients.invoke(httpGet, 0);
+		httpGet.setProtocolVersion(new ProtocolVersion("HTTP", 1, 0));
+		
+		System.out.println(result);
 	}
 
 	@Test
