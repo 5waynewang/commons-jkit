@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>commons-jkit</groupId>
 	<artifactId>commons-jkit</artifactId>
-	<version>0.13-SNAPSHOT</version>
+	<version>0.14-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>commons-jkit v${project.version}</name>
 
@@ -112,6 +112,12 @@
 				<artifactId>logback-core</artifactId>
 				<version>${logback.version}</version>
 				<scope>test</scope>
+			</dependency>
+			<!-- java ee -->
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.0.1</version>
 			</dependency>
 			<!-- unit test lib -->
 			<dependency>

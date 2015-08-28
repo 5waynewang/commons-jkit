@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.13-SNAPSHOT</version>
+		<version>0.14-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -34,6 +34,12 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
+		</dependency>
+		<!-- java ee -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- unit test lib -->
 		<!-- junit -->
