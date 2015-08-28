@@ -1,5 +1,5 @@
-/commons-*/target
+target
 
-/commons-*/.settings
-/commons-*/.classpath
-/commons-*/.project
+.settings
+.classpath
+.project
