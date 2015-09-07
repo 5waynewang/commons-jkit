@@ -13,6 +13,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -39,6 +40,8 @@ public class PoolingHttpClients {
 	private static final Log log = LogFactory.getLog(PoolingHttpClients.class);
 
 	private final static PoolingHttpClientConnectionManager connManager;
+	
+	private final static HttpClientBuilder httpClientBuilderBuilder;
 
 	private final static CloseableHttpClient httpClient;
 
@@ -50,6 +53,7 @@ public class PoolingHttpClients {
 		connManager = new PoolingHttpClientConnectionManager();
 		connManager.setMaxTotal(HttpClientConfig.HTTP_MAX_TOTAL_CONN);
 		connManager.setDefaultMaxPerRoute(HttpClientConfig.HTTP_MAX_CONN_PER_ROUTE);
+		connManager.setValidateAfterInactivity(HttpClientConfig.VALIDATE_AFTER_INACTIVITY);
 
 		final ConnectionConfig.Builder connectionConfigBuilder = ConnectionConfig.custom();
 		connectionConfigBuilder.setCharset(Charset.forName(HttpClientConfig.HTTP_CHARSET));
@@ -61,7 +65,7 @@ public class PoolingHttpClients {
 		socketConfigBuilder.setSoTimeout(HttpClientConfig.HTTP_SO_TIMEOUT);
 		connManager.setDefaultSocketConfig(socketConfigBuilder.build());
 
-		final HttpClientBuilder httpClientBuilderBuilder = HttpClientBuilder.create();
+		httpClientBuilderBuilder = HttpClientBuilder.create();
 		httpClientBuilderBuilder.setConnectionManager(connManager);
 		// 增加 keep alive 策略
 		httpClientBuilderBuilder.setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
@@ -80,7 +84,7 @@ public class PoolingHttpClients {
 				return super.isRedirectable(method);
 			}
 		});
-		httpClient = httpClientBuilderBuilder.build();
+		httpClient = createHttpclient();
 
 		final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 		requestConfigBuilder.setConnectTimeout(HttpClientConfig.HTTP_CONN_TIMEOUT);
@@ -91,6 +95,10 @@ public class PoolingHttpClients {
 
 	public static CloseableHttpClient getDefaultHttpclient() {
 		return httpClient;
+	}
+	
+	public static CloseableHttpClient createHttpclient() {
+		return httpClientBuilderBuilder.build();
 	}
 
 	public static RequestConfig getDefaultRequestConfig() {
@@ -248,10 +256,18 @@ public class PoolingHttpClients {
 	}
 
 	public static HttpInvokeResult invoke(HttpRequestBase request, long timeout) {
-		return invoke(request, timeout, null);
+		return invoke(getDefaultHttpclient(), request, timeout);
+	}
+	
+	public static HttpInvokeResult invoke(HttpClient httpClient, HttpRequestBase request, long timeout) {
+		return invoke(httpClient, request, timeout, null);
+	}
+	
+	public static HttpInvokeResult invoke(HttpRequestBase request, long timeout, String proxy) {
+		return invoke(getDefaultHttpclient(), request, timeout, proxy);
 	}
 
-	public static HttpInvokeResult invoke(HttpRequestBase request, long timeout, String proxy) {
+	public static HttpInvokeResult invoke(HttpClient httpClient, HttpRequestBase request, long timeout, String proxy) {
 		final String url = request.getURI().toString();
 		if (log.isDebugEnabled()) {
 			log.debug("invoke url:" + url);
@@ -271,13 +287,14 @@ public class PoolingHttpClients {
 		request.setConfig(builder.build());
 
 		try {
-			result = getDefaultHttpclient().execute(request, responseHandler);
+			result = httpClient.execute(request, responseHandler);
 			if (result.getException() != null) {
 				request.abort();
 				log.error("请求失败,statusCode=" + result.getStatusCode() + ",url=" + url + ","
 						+ result.getException().getMessage());
 			}
 			result.setUrl(request.getURI().toString());
+			
 			request.releaseConnection();
 			return result;
 		}

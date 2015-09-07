@@ -20,12 +20,13 @@ class DefaultResponseHandler implements ResponseHandler<HttpInvokeResult> {
 			final HttpEntity entity = response.getEntity();
 
 			result.setStatusCode(statusLine.getStatusCode());
+			result.setReason(statusLine.getReasonPhrase());
 
 			if (statusLine.getStatusCode() >= 300) {
-				result.setReason(statusLine.getReasonPhrase());
 				EntityUtils.consume(entity);
 			}
-			result.setContent(EntityUtils.toString(entity, HttpClientConfig.HTTP_CHARSET));
+
+			result.setResponseBody(EntityUtils.toByteArray(entity));
 		}
 		catch (final Throwable e) {
 			result.setReason(e.getMessage());

@@ -41,10 +41,10 @@ public class PoolingHttpClientsTest {
 	}
 
 	@Test
-	public void testGet() {
-		HttpInvokeResult result = PoolingHttpClients.get("http://www.baidu.com");
+	public void testGetResponseBodyAsString() {
+		HttpInvokeResult result = PoolingHttpClients.get("http://config.ixiaopu.com:54321/config.co?dataId=GLOBAL&group=XIANGQU");
 		if (result.isSuccess()) {
-			System.out.println(result.getContent());
+			System.out.println(result.getResponseBodyAsString());
 		} else if (result.getException() != null) {
 			System.out.println(result);
 			result.getException().printStackTrace();
@@ -73,7 +73,7 @@ public class PoolingHttpClientsTest {
 
 		HttpInvokeResult result = PoolingHttpClients.post("http://www.baidu.com", params);
 		if (result.isSuccess()) {
-			System.out.println(result.getContent());
+			System.out.println(result.getResponseBodyAsString());
 		} else if (result.getException() != null) {
 			System.out.println(result);
 			result.getException().printStackTrace();

@@ -16,7 +16,10 @@ public interface HttpClientConfig {
 	 */
 	int HTTP_KEEPIDLE_DURATION = Integer.parseInt(System.getProperty("http.keepidle.duration", "5000"));
 
+	@Deprecated
 	boolean HTTP_STALE_CHECK = Boolean.parseBoolean(System.getProperty("http.stale.check", "true"));
+	
+	int VALIDATE_AFTER_INACTIVITY = Integer.parseInt(System.getProperty("http.validateAfterInactivity.ms", "300000"));
 
 	int HTTP_CONN_TIMEOUT = Integer.parseInt(System.getProperty("http.conn.timeout", "2000"));
 
