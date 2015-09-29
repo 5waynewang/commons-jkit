@@ -18,8 +18,7 @@ import commons.lang.JsonUtils;
  */
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-
+	private static final long serialVersionUID = -8915237759248999534L;
 	public static final int NO_MESSAGE = 0;// 无消息
 	public static final int NOTE_MESSAGE = 1;// 提示消息
 	public static final int CONFIRM_MESSAGE = 2;// 确认消息
