@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>commons-jkit</groupId>
 	<artifactId>commons-jkit</artifactId>
-	<version>0.15-SNAPSHOT</version>
+	<version>0.16-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>commons-jkit v${project.version}</name>
 
@@ -13,7 +13,7 @@
 		<maven.test.skip>true</maven.test.skip>
 		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.1.2</logback.version>
-        <httpcomponents.version>4.4</httpcomponents.version>
+        <httpcomponents.version>4.4.1</httpcomponents.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
@@ -34,7 +34,7 @@
 				<artifactId>commons-lang</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<!-- httpclient -->
+			<!-- httpcomponents -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>

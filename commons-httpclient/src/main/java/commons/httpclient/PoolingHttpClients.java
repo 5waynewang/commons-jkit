@@ -90,7 +90,19 @@ public class PoolingHttpClients {
 		requestConfigBuilder.setConnectTimeout(HttpClientConfig.HTTP_CONN_TIMEOUT);
 		requestConfigBuilder.setSocketTimeout(HttpClientConfig.HTTP_SO_TIMEOUT);
 //		requestConfigBuilder.setCircularRedirectsAllowed(true);
+//		requestConfigBuilder.setDecompressionEnabled(false);
 		requestConfig = requestConfigBuilder.build();
+		
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+			public void run() {
+				try {
+					httpClient.close();
+				}
+				catch (Exception ignore) {
+				}
+			}
+		});
 	}
 
 	public static CloseableHttpClient getDefaultHttpclient() {
@@ -133,12 +145,12 @@ public class PoolingHttpClients {
 	}
 
 	public static HttpInvokeResult proxyGet(String url, long timeout, String proxy) {
-		return proxyGet(url, timeout, null, null);
+		return proxyGet(url, timeout, null, proxy);
 	}
 
 	public static HttpInvokeResult proxyGet(String url, long timeout, Collection<Header> headers,
 			String proxy) {
-		return invoke(createHttpGet(url, headers), timeout, null);
+		return invoke(createHttpGet(url, headers), timeout, proxy);
 	}
 
 	public static HttpRequestBase addHeaders(Collection<Header> headers, HttpRequestBase request) {

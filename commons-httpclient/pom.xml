@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.15-SNAPSHOT</version>
+		<version>0.16-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -14,7 +14,7 @@
 	<name>commons-httpclient v${project.version}</name>
 
 	<dependencies>
-		<!-- httpclient -->
+		<!-- httpcomponents -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
