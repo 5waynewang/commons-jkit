@@ -35,6 +35,11 @@
 				<artifactId>commons-lang</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>commons-validation</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<!-- httpcomponents -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -181,6 +186,7 @@
 						<descriptor>commons-httpclient/release.xml</descriptor>
 						<descriptor>commons-fqueue/release.xml</descriptor>
 						<descriptor>commons-lang/release.xml</descriptor>
+						<descriptor>commons-validation/release.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>
@@ -232,5 +238,6 @@
 		<module>commons-httpclient</module>
 		<module>commons-fqueue</module>
 		<module>commons-lang</module>
+		<module>commons-validation</module>
 	</modules>
 </project>
