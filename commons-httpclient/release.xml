@@ -3,6 +3,7 @@
     <id>commons-httpclient</id>
     <formats>
         <format>dir</format>
+        <format>tar.gz</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <moduleSets>
@@ -11,23 +12,14 @@
                 <include>commons-jkit:commons-httpclient</include>
             </includes>
             <binaries>
-                <outputDirectory>classes/</outputDirectory>
-                <unpack>true</unpack>
+                <outputDirectory>lib/</outputDirectory>
+                <unpack>false</unpack>
                 <dependencySets>
                     <dependencySet>
                         <outputDirectory>lib</outputDirectory>
                     </dependencySet>
                 </dependencySets>
             </binaries>
-			<sources>
-				<excludeSubModuleDirectories>false</excludeSubModuleDirectories>
-				<fileSets>
-					<fileSet>
-						<directory>bin</directory>
-						<outputDirectory>bin</outputDirectory>
-					</fileSet>
-				</fileSets>
-		  </sources>
         </moduleSet>
     </moduleSets>
 </assembly>

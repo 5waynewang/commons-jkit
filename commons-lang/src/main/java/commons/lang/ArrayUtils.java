@@ -612,4 +612,22 @@ public class ArrayUtils {
 		}
 		return result;
 	}
+	
+	/**
+	 * 是否存在null值
+	 * 
+	 * @param objects
+	 * @return
+	 */
+	public static boolean containsNullValue(Object[] objects) {
+		if (objects == null) {
+			return true;
+		}
+		for (Object object : objects) {
+			if (object == null) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

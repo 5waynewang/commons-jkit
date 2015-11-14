@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <assembly>
-    <id>commons-lang</id>
+    <id>commons-serialization</id>
     <formats>
         <format>dir</format>
         <format>tar.gz</format>
@@ -9,7 +9,7 @@
     <moduleSets>
         <moduleSet>
             <includes>
-                <include>commons-jkit:commons-lang</include>
+                <include>commons-jkit:commons-serialization</include>
             </includes>
             <binaries>
                 <outputDirectory>lib/</outputDirectory>

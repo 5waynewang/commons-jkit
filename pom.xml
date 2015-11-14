@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>commons-jkit</groupId>
 	<artifactId>commons-jkit</artifactId>
-	<version>0.16-SNAPSHOT</version>
+	<version>0.17-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>commons-jkit v${project.version}</name>
 
@@ -38,6 +38,16 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>commons-validation</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>commons-serialization</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>commons-cache</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<!-- httpcomponents -->
@@ -119,18 +129,36 @@
 				<version>${logback.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<!-- memcached -->
+			<dependency>
+				<groupId>com.googlecode.xmemcached</groupId>
+				<artifactId>xmemcached</artifactId>
+				<version>2.0.0</version>
+			</dependency>
+			<!-- jedis -->
+			<dependency>
+				<groupId>redis.clients</groupId>
+				<artifactId>jedis</artifactId>
+				<version>2.6.3</version>
+			</dependency>
 			<!-- java ee -->
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.0.1</version>
 			</dependency>
-			<!-- unit test lib -->
+			<!-- junit -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
 				<scope>test</scope>
+			</dependency>
+			<!-- hessian -->
+			<dependency>
+				<groupId>com.caucho</groupId>
+				<artifactId>hessian</artifactId>
+				<version>4.0.38</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -187,6 +215,8 @@
 						<descriptor>commons-fqueue/release.xml</descriptor>
 						<descriptor>commons-lang/release.xml</descriptor>
 						<descriptor>commons-validation/release.xml</descriptor>
+						<descriptor>commons-serialization/release.xml</descriptor>
+						<descriptor>commons-cache/release.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>
@@ -239,5 +269,7 @@
 		<module>commons-fqueue</module>
 		<module>commons-lang</module>
 		<module>commons-validation</module>
+		<module>commons-serialization</module>
+		<module>commons-cache</module>
 	</modules>
 </project>
