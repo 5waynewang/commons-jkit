@@ -272,7 +272,7 @@ public abstract class JedisFacade extends AbstractRedisFacade {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[] rawValue = this.serializeValue(values);
+			final byte[][] rawValue = this.serializeValues(values);
 
 			final Long result = resource.sadd(rawKey, rawValue);
 
@@ -294,7 +294,7 @@ public abstract class JedisFacade extends AbstractRedisFacade {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[] rawValue = this.serializeValue(values);
+			final byte[][] rawValue = this.serializeValues(values);
 
 			final Long result = resource.srem(rawKey, rawValue);
 
@@ -449,7 +449,7 @@ public abstract class JedisFacade extends AbstractRedisFacade {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[] rawValue = this.serializeValue(values);
+			final byte[][] rawValue = this.serializeValues(values);
 
 			return resource.lpush(rawKey, rawValue);
 		} catch (Exception e) {
