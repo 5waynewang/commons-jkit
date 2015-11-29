@@ -3,6 +3,7 @@
  */
 package commons.lang;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,11 +27,11 @@ public class NumberUtils {
 	 * n1是否等于n2
 	 * 
 	 * <pre>
-     * NumberUtils.eq(null, null)  = true
-     * NumberUtils.eq(0, null)  = false
-     * NumberUtils.eq(555, 555) = true
-     * NumberUtils.eq(555, 666) = false
-     * </pre>
+	 * NumberUtils.eq(null, null)  = true
+	 * NumberUtils.eq(0, null)  = false
+	 * NumberUtils.eq(555, 555) = true
+	 * NumberUtils.eq(555, 666) = false
+	 * </pre>
 	 * 
 	 * @param n1
 	 * @param n2
@@ -44,10 +45,10 @@ public class NumberUtils {
 	 * n是否等于0
 	 * 
 	 * <pre>
-     * NumberUtils.eqZero(null)  = false
-     * NumberUtils.eqZero(0)  = true
-     * NumberUtils.eqZero(555) = false
-     * </pre>
+	 * NumberUtils.eqZero(null)  = false
+	 * NumberUtils.eqZero(0)  = true
+	 * NumberUtils.eqZero(555) = false
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -60,13 +61,13 @@ public class NumberUtils {
 	 * s是否等于0
 	 * 
 	 * <pre>
-     * NumberUtils.eqZero(null)  = false
-     * NumberUtils.eqZero("")  = false
-     * NumberUtils.eqZero("  ")  = false
-     * NumberUtils.eqZero("0")  = true
-     * NumberUtils.eqZero("555") = false
-     * NumberUtils.eqZero("string") = false
-     * </pre>
+	 * NumberUtils.eqZero(null)  = false
+	 * NumberUtils.eqZero("")  = false
+	 * NumberUtils.eqZero("  ")  = false
+	 * NumberUtils.eqZero("0")  = true
+	 * NumberUtils.eqZero("555") = false
+	 * NumberUtils.eqZero("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -74,8 +75,7 @@ public class NumberUtils {
 	public static boolean eqZero(String s) {
 		try {
 			return s != null && eq(Double.valueOf(s), 0);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -84,10 +84,10 @@ public class NumberUtils {
 	 * n是否等于0或null
 	 * 
 	 * <pre>
-     * NumberUtils.eqZeroOrNull(null)  = true
-     * NumberUtils.eqZeroOrNull(0)  = true
-     * NumberUtils.eqZeroOrNull(555) = false
-     * </pre>
+	 * NumberUtils.eqZeroOrNull(null)  = true
+	 * NumberUtils.eqZeroOrNull(0)  = true
+	 * NumberUtils.eqZeroOrNull(555) = false
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -100,13 +100,13 @@ public class NumberUtils {
 	 * s是否等于0或null
 	 * 
 	 * <pre>
-     * NumberUtils.eqZeroOrNull(null)  = true
-     * NumberUtils.eqZeroOrNull("0")  = true
-     * NumberUtils.eqZeroOrNull("") = false
-     * NumberUtils.eqZeroOrNull("   ") = false
-     * NumberUtils.eqZeroOrNull("555") = false
-     * NumberUtils.eqZeroOrNull("string") = false
-     * </pre>
+	 * NumberUtils.eqZeroOrNull(null)  = true
+	 * NumberUtils.eqZeroOrNull("0")  = true
+	 * NumberUtils.eqZeroOrNull("") = false
+	 * NumberUtils.eqZeroOrNull("   ") = false
+	 * NumberUtils.eqZeroOrNull("555") = false
+	 * NumberUtils.eqZeroOrNull("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -114,8 +114,7 @@ public class NumberUtils {
 	public static boolean eqZeroOrNull(String s) {
 		try {
 			return s == null || eq(Double.valueOf(s), 0);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -124,13 +123,13 @@ public class NumberUtils {
 	 * s是否等于0或空
 	 * 
 	 * <pre>
-     * NumberUtils.eqZeroOrBlank(null)  = true
-     * NumberUtils.eqZeroOrBlank("0")  = true
-     * NumberUtils.eqZeroOrBlank("") = true
-     * NumberUtils.eqZeroOrBlank("   ") = true
-     * NumberUtils.eqZeroOrBlank("555") = false
-     * NumberUtils.eqZeroOrBlank("string") = false
-     * </pre>
+	 * NumberUtils.eqZeroOrBlank(null)  = true
+	 * NumberUtils.eqZeroOrBlank("0")  = true
+	 * NumberUtils.eqZeroOrBlank("") = true
+	 * NumberUtils.eqZeroOrBlank("   ") = true
+	 * NumberUtils.eqZeroOrBlank("555") = false
+	 * NumberUtils.eqZeroOrBlank("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -138,8 +137,7 @@ public class NumberUtils {
 	public static boolean eqZeroOrBlank(String s) {
 		try {
 			return StringUtils.isBlank(s) || eq(Double.valueOf(s), 0);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -148,11 +146,11 @@ public class NumberUtils {
 	 * n是否大于0
 	 * 
 	 * <pre>
-     * NumberUtils.gtZero(null)  = false
-     * NumberUtils.gtZero(-1)  = false
-     * NumberUtils.gtZero(0) = false
-     * NumberUtils.gtZero(1) = true
-     * </pre>
+	 * NumberUtils.gtZero(null)  = false
+	 * NumberUtils.gtZero(-1)  = false
+	 * NumberUtils.gtZero(0) = false
+	 * NumberUtils.gtZero(1) = true
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -165,12 +163,12 @@ public class NumberUtils {
 	 * s是否大于0
 	 * 
 	 * <pre>
-     * NumberUtils.gtZero(null)  = false
-     * NumberUtils.gtZero("-1")  = false
-     * NumberUtils.gtZero("0") = false
-     * NumberUtils.gtZero("1") = true
-     * NumberUtils.gtZero("string") = false
-     * </pre>
+	 * NumberUtils.gtZero(null)  = false
+	 * NumberUtils.gtZero("-1")  = false
+	 * NumberUtils.gtZero("0") = false
+	 * NumberUtils.gtZero("1") = true
+	 * NumberUtils.gtZero("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -178,8 +176,7 @@ public class NumberUtils {
 	public static boolean gtZero(String s) {
 		try {
 			return s != null && Double.parseDouble(s) > 0;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -188,11 +185,11 @@ public class NumberUtils {
 	 * n是否大于或等于0
 	 * 
 	 * <pre>
-     * NumberUtils.geZero(null)  = false
-     * NumberUtils.geZero(-1)  = false
-     * NumberUtils.geZero(0) = true
-     * NumberUtils.geZero(1) = true
-     * </pre>
+	 * NumberUtils.geZero(null)  = false
+	 * NumberUtils.geZero(-1)  = false
+	 * NumberUtils.geZero(0) = true
+	 * NumberUtils.geZero(1) = true
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -205,12 +202,12 @@ public class NumberUtils {
 	 * s是否大于或等于0
 	 * 
 	 * <pre>
-     * NumberUtils.geZero(null)  = false
-     * NumberUtils.geZero("-1")  = false
-     * NumberUtils.geZero("0") = true
-     * NumberUtils.geZero("1") = true
-     * NumberUtils.geZero("string") = false
-     * </pre>
+	 * NumberUtils.geZero(null)  = false
+	 * NumberUtils.geZero("-1")  = false
+	 * NumberUtils.geZero("0") = true
+	 * NumberUtils.geZero("1") = true
+	 * NumberUtils.geZero("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -218,8 +215,7 @@ public class NumberUtils {
 	public static boolean geZero(String s) {
 		try {
 			return s != null && Double.parseDouble(s) >= 0;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -228,11 +224,11 @@ public class NumberUtils {
 	 * n是否小于0
 	 * 
 	 * <pre>
-     * NumberUtils.ltZero(null)  = false
-     * NumberUtils.ltZero(-1)  = true
-     * NumberUtils.ltZero(0) = false
-     * NumberUtils.ltZero(1) = false
-     * </pre>
+	 * NumberUtils.ltZero(null)  = false
+	 * NumberUtils.ltZero(-1)  = true
+	 * NumberUtils.ltZero(0) = false
+	 * NumberUtils.ltZero(1) = false
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -245,12 +241,12 @@ public class NumberUtils {
 	 * s是否小于0
 	 * 
 	 * <pre>
-     * NumberUtils.ltZero(null)  = false
-     * NumberUtils.ltZero("-1")  = true
-     * NumberUtils.ltZero("0") = false
-     * NumberUtils.ltZero("1") = false
-     * NumberUtils.ltZero("string") = false
-     * </pre>
+	 * NumberUtils.ltZero(null)  = false
+	 * NumberUtils.ltZero("-1")  = true
+	 * NumberUtils.ltZero("0") = false
+	 * NumberUtils.ltZero("1") = false
+	 * NumberUtils.ltZero("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -258,8 +254,7 @@ public class NumberUtils {
 	public static boolean ltZero(String s) {
 		try {
 			return s != null && Double.parseDouble(s) < 0;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -268,11 +263,11 @@ public class NumberUtils {
 	 * n是否小于或等于0
 	 * 
 	 * <pre>
-     * NumberUtils.ltZero(null)  = false
-     * NumberUtils.ltZero(-1)  = true
-     * NumberUtils.ltZero(0) = true
-     * NumberUtils.ltZero(1) = false
-     * </pre>
+	 * NumberUtils.ltZero(null)  = false
+	 * NumberUtils.ltZero(-1)  = true
+	 * NumberUtils.ltZero(0) = true
+	 * NumberUtils.ltZero(1) = false
+	 * </pre>
 	 * 
 	 * @param n
 	 * @return
@@ -285,12 +280,12 @@ public class NumberUtils {
 	 * s是否小于或等于0
 	 * 
 	 * <pre>
-     * NumberUtils.leZero(null)  = false
-     * NumberUtils.leZero("-1")  = true
-     * NumberUtils.leZero("0") = true
-     * NumberUtils.leZero("1") = false
-     * NumberUtils.leZero("string") = false
-     * </pre>
+	 * NumberUtils.leZero(null)  = false
+	 * NumberUtils.leZero("-1")  = true
+	 * NumberUtils.leZero("0") = true
+	 * NumberUtils.leZero("1") = false
+	 * NumberUtils.leZero("string") = false
+	 * </pre>
 	 * 
 	 * @param s
 	 * @return
@@ -298,8 +293,7 @@ public class NumberUtils {
 	public static boolean leZero(String s) {
 		try {
 			return s != null && Double.parseDouble(s) <= 0;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -318,7 +312,8 @@ public class NumberUtils {
 	 * 截取数字
 	 * 
 	 * @param num
-	 * @param offset 位数, 正数-截取小数点后的数字(小数位), 从0开始; 负数-截取小数点前的数字(整数位), 从-1开始
+	 * @param offset
+	 *            位数, 正数-截取小数点后的数字(小数位), 从0开始; 负数-截取小数点前的数字(整数位), 从-1开始
 	 * @return
 	 */
 	public static double truncate(double num, int offset) {
@@ -326,25 +321,20 @@ public class NumberUtils {
 		String[] numStrs = numStr.split("\\.");
 		if (offset == 0) {
 			return Double.parseDouble(numStrs[0]);
-		}
-		else if (offset > 0) {
+		} else if (offset > 0) {
 			if (numStrs.length == 1) {
 				return Double.parseDouble(numStrs[0]);
-			}
-			else {
+			} else {
 				if (numStrs[1].length() <= offset) {
 					return num;
-				}
-				else {
+				} else {
 					return Double.parseDouble(numStrs[0] + "." + numStrs[1].substring(0, offset));
 				}
 			}
-		}
-		else {
+		} else {
 			if ((numStrs[0].length() - (num >= 0 ? 0 : 1)) <= Math.abs(offset)) {
 				return 0;
-			}
-			else {
+			} else {
 				return Double.parseDouble(numStrs[0].substring(0, numStrs[0].length() - Math.abs(offset)));
 			}
 		}
@@ -364,7 +354,8 @@ public class NumberUtils {
 	 * 四舍五入
 	 * 
 	 * @param num
-	 * @param offset 位数, 正数-四舍五入小数点后的数字(小数位), 从0开始; 负数-四舍五入小数点前的数字(整数位), 从-1开始
+	 * @param offset
+	 *            位数, 正数-四舍五入小数点后的数字(小数位), 从0开始; 负数-四舍五入小数点前的数字(整数位), 从-1开始
 	 *            [..-2(至千位)-1(至百位)0(至个位)1(至小数点后1位)2(至小数点后2位)...]
 	 * @return
 	 */
@@ -377,18 +368,15 @@ public class NumberUtils {
 		if (offset > 0) {
 			if (numStrs.length == 1) {
 				return Double.parseDouble(numStrs[0]);
-			}
-			else {
+			} else {
 				if (numStrs[1].length() <= offset) {
 					return num;
-				}
-				else {
+				} else {
 					return Double.parseDouble(numStrs[0] + "." + numStrs[1].substring(0, offset))
 							+ (numStrs[1].charAt(offset) >= 53 ? (1 / Math.pow(10, offset)) : 0);
 				}
 			}
-		}
-		else {
+		} else {
 			if (numStrs[0].length() + (num >= 0 ? 0 : 1) < Math.abs(offset) + 1) {
 				return 0;
 			}
@@ -434,10 +422,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toByteObject(null)  = null
-     * NumberUtils.toByteObject("string")  = null
-     * NumberUtils.toByteObject("55") = 55
-     * </pre>
+	 * NumberUtils.toByteObject(null)  = null
+	 * NumberUtils.toByteObject("string")  = null
+	 * NumberUtils.toByteObject("55") = 55
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -445,8 +433,7 @@ public class NumberUtils {
 	public static Byte toByteObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Byte.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Byte.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -455,10 +442,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toShortObject(null)  = null
-     * NumberUtils.toShortObject("string")  = null
-     * NumberUtils.toShortObject("555") = 555
-     * </pre>
+	 * NumberUtils.toShortObject(null)  = null
+	 * NumberUtils.toShortObject("string")  = null
+	 * NumberUtils.toShortObject("555") = 555
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -466,8 +453,7 @@ public class NumberUtils {
 	public static Short toShortObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Short.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Short.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -476,10 +462,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toIntegerObject(null)  = null
-     * NumberUtils.toIntegerObject("string")  = null
-     * NumberUtils.toIntegerObject("555") = 555
-     * </pre>
+	 * NumberUtils.toIntegerObject(null)  = null
+	 * NumberUtils.toIntegerObject("string")  = null
+	 * NumberUtils.toIntegerObject("555") = 555
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -487,8 +473,7 @@ public class NumberUtils {
 	public static Integer toIntegerObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Integer.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Integer.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -497,10 +482,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toLongObject(null)  = null
-     * NumberUtils.toLongObject("string")  = null
-     * NumberUtils.toLongObject("555") = 555l
-     * </pre>
+	 * NumberUtils.toLongObject(null)  = null
+	 * NumberUtils.toLongObject("string")  = null
+	 * NumberUtils.toLongObject("555") = 555l
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -508,8 +493,7 @@ public class NumberUtils {
 	public static Long toLongObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Long.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Long.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -518,10 +502,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toFloatObject(null)  = null
-     * NumberUtils.toFloatObject("string")  = null
-     * NumberUtils.toFloatObject("555.5") = 555.5f
-     * </pre>
+	 * NumberUtils.toFloatObject(null)  = null
+	 * NumberUtils.toFloatObject("string")  = null
+	 * NumberUtils.toFloatObject("555.5") = 555.5f
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -529,8 +513,7 @@ public class NumberUtils {
 	public static Float toFloatObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Float.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Float.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -539,10 +522,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.toDoubleObject(null)  = null
-     * NumberUtils.toDoubleObject("string")  = null
-     * NumberUtils.toDoubleObject("555.5") = 555.5d
-     * </pre>
+	 * NumberUtils.toDoubleObject(null)  = null
+	 * NumberUtils.toDoubleObject("string")  = null
+	 * NumberUtils.toDoubleObject("555.5") = 555.5d
+	 * </pre>
 	 * 
 	 * @param str
 	 * @return
@@ -550,8 +533,7 @@ public class NumberUtils {
 	public static Double toDoubleObject(String str) {
 		try {
 			return StringUtils.isBlank(str) ? null : Double.valueOf(str);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			LOG.error("error to convert " + str + " to " + Double.class.getName() + ", " + e.getClass().getName());
 			return null;
@@ -560,10 +542,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultByte(null)  = 0
-     * NumberUtils.defaultByte(0)  = 0
-     * NumberUtils.defaultByte(5) = 5
-     * </pre>
+	 * NumberUtils.defaultByte(null)  = 0
+	 * NumberUtils.defaultByte(0)  = 0
+	 * NumberUtils.defaultByte(5) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -574,10 +556,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultByte(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultByte(0, defaultValue)  = 0
-     * NumberUtils.defaultByte(5, defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultByte(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultByte(0, defaultValue)  = 0
+	 * NumberUtils.defaultByte(5, defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -589,12 +571,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5", defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5", defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -606,10 +588,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultShort(null)  = 0
-     * NumberUtils.defaultShort(0)  = 0
-     * NumberUtils.defaultShort(5) = 5
-     * </pre>
+	 * NumberUtils.defaultShort(null)  = 0
+	 * NumberUtils.defaultShort(0)  = 0
+	 * NumberUtils.defaultShort(5) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -620,10 +602,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultShort(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultShort(0, defaultValue)  = 0
-     * NumberUtils.defaultShort(5, defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultShort(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultShort(0, defaultValue)  = 0
+	 * NumberUtils.defaultShort(5, defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -635,12 +617,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5", defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5", defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -652,10 +634,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultInteger(null)  = 0
-     * NumberUtils.defaultInteger(0)  = 0
-     * NumberUtils.defaultInteger(5) = 5
-     * </pre>
+	 * NumberUtils.defaultInteger(null)  = 0
+	 * NumberUtils.defaultInteger(0)  = 0
+	 * NumberUtils.defaultInteger(5) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -666,10 +648,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultInteger(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultInteger(0, defaultValue)  = 0
-     * NumberUtils.defaultInteger(5, defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultInteger(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultInteger(0, defaultValue)  = 0
+	 * NumberUtils.defaultInteger(5, defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -681,12 +663,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5", defaultValue) = 5
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5", defaultValue) = 5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -698,10 +680,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultLong(null)  = 0
-     * NumberUtils.defaultLong(0)  = 0
-     * NumberUtils.defaultLong(5l) = 5l
-     * </pre>
+	 * NumberUtils.defaultLong(null)  = 0
+	 * NumberUtils.defaultLong(0)  = 0
+	 * NumberUtils.defaultLong(5l) = 5l
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -712,10 +694,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultLong(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultLong(0, defaultValue)  = 0
-     * NumberUtils.defaultLong(5l, defaultValue) = 5l
-     * </pre>
+	 * NumberUtils.defaultLong(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultLong(0, defaultValue)  = 0
+	 * NumberUtils.defaultLong(5l, defaultValue) = 5l
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -727,12 +709,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5", defaultValue) = 5l
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5", defaultValue) = 5l
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -744,10 +726,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultDouble(null)  = 0
-     * NumberUtils.defaultDouble(0)  = 0
-     * NumberUtils.defaultDouble(5d) = 5d
-     * </pre>
+	 * NumberUtils.defaultDouble(null)  = 0
+	 * NumberUtils.defaultDouble(0)  = 0
+	 * NumberUtils.defaultDouble(5d) = 5d
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -758,10 +740,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultFloat(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultFloat(0, defaultValue)  = 0
-     * NumberUtils.defaultFloat(5d, defaultValue) = 5d
-     * </pre>
+	 * NumberUtils.defaultFloat(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultFloat(0, defaultValue)  = 0
+	 * NumberUtils.defaultFloat(5d, defaultValue) = 5d
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -773,12 +755,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5.5", defaultValue) = 5.5
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("  ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5.5", defaultValue) = 5.5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -790,10 +772,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultDouble(null)  = 0
-     * NumberUtils.defaultDouble(0)  = 0
-     * NumberUtils.defaultDouble(5d) = 5d
-     * </pre>
+	 * NumberUtils.defaultDouble(null)  = 0
+	 * NumberUtils.defaultDouble(0)  = 0
+	 * NumberUtils.defaultDouble(5d) = 5d
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @return
@@ -804,10 +786,10 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultDouble(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultDouble(0, defaultValue)  = 0
-     * NumberUtils.defaultDouble(5d, defaultValue) = 5d
-     * </pre>
+	 * NumberUtils.defaultDouble(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultDouble(0, defaultValue)  = 0
+	 * NumberUtils.defaultDouble(5d, defaultValue) = 5d
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -819,12 +801,12 @@ public class NumberUtils {
 
 	/**
 	 * <pre>
-     * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank(" ", defaultValue)  = defaultValue
-     * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
-     * NumberUtils.defaultIfBlank("5.5", defaultValue) = 5.5
-     * </pre>
+	 * NumberUtils.defaultIfBlank(null, defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank(" ", defaultValue)  = defaultValue
+	 * NumberUtils.defaultIfBlank("0", defaultValue)  = 0
+	 * NumberUtils.defaultIfBlank("5.5", defaultValue) = 5.5
+	 * </pre>
 	 * 
 	 * @param dest
 	 * @param defaultValue
@@ -832,5 +814,113 @@ public class NumberUtils {
 	 */
 	public static Double defaultIfBlank(String dest, Double defaultValue) {
 		return StringUtils.isBlank(dest) ? defaultValue : Double.valueOf(dest);
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static int sum(int... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return 0;
+		}
+		int sum = 0;
+		for (int value : values) {
+			sum += value;
+		}
+		return sum;
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static Integer sum(Integer... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return null;
+		}
+		Integer sum = 0;
+		for (Integer value : values) {
+			if (value != null) {
+				sum += value;
+			}
+		}
+		return sum;
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static long sum(long... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return 0;
+		}
+		long sum = 0;
+		for (long value : values) {
+			sum += value;
+		}
+		return sum;
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static Long sum(Long... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return null;
+		}
+		Long sum = 0L;
+		for (Long value : values) {
+			if (value != null) {
+				sum += value;
+			}
+		}
+		return sum;
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static double sum(double... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return 0;
+		}
+		double sum = 0;
+		for (double value : values) {
+			sum += value;
+		}
+		return sum;
+	}
+
+	/**
+	 * 求和
+	 * 
+	 * @param values
+	 * @return
+	 */
+	public static Double sum(Double... values) {
+		if (ArrayUtils.isEmpty(values)) {
+			return null;
+		}
+		Double sum = 0.0;
+		for (Double value : values) {
+			if (value != null) {
+				sum += value;
+			}
+		}
+		return sum;
 	}
 }
