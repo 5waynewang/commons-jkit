@@ -839,7 +839,7 @@ public class NumberUtils {
 	 * @param values
 	 * @return
 	 */
-	public static Integer sum(Integer... values) {
+	public static Integer sums(Integer... values) {
 		if (ArrayUtils.isEmpty(values)) {
 			return null;
 		}
@@ -875,7 +875,7 @@ public class NumberUtils {
 	 * @param values
 	 * @return
 	 */
-	public static Long sum(Long... values) {
+	public static Long sums(Long... values) {
 		if (ArrayUtils.isEmpty(values)) {
 			return null;
 		}
@@ -911,7 +911,7 @@ public class NumberUtils {
 	 * @param values
 	 * @return
 	 */
-	public static Double sum(Double... values) {
+	public static Double sums(Double... values) {
 		if (ArrayUtils.isEmpty(values)) {
 			return null;
 		}
