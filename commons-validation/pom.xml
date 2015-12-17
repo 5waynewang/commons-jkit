@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.17-SNAPSHOT</version>
+		<version>0.18-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -13,7 +13,6 @@
 	<name>commons-validation v${project.version}</name>
 	
 	<dependencies>
-		<!-- unit test lib -->
 		<!-- junit -->
 		<dependency>
 			<groupId>junit</groupId>

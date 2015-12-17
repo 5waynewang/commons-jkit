@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.17-SNAPSHOT</version>
+		<version>0.18-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -25,10 +25,16 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- alibaba -->
 		<dependency>
@@ -41,7 +47,6 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- unit test lib -->
 		<!-- junit -->
 		<dependency>
 			<groupId>junit</groupId>

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.17-SNAPSHOT</version>
+		<version>0.18-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>commons-serialization</artifactId>
@@ -19,7 +19,7 @@
 			<artifactId>hessian</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- unit test -->
+		<!-- junit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

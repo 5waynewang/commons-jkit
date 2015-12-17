@@ -15,10 +15,6 @@ public class CodecUtils {
 	/**
 	 * 对long类型的数字编码
 	 * 
-	 * <pre>
-	 * 不会报错
-	 * </pre>
-	 * 
 	 * @param dest
 	 * @return
 	 */
@@ -50,10 +46,6 @@ public class CodecUtils {
 
 	/**
 	 * 解码 通过encode(long dest)方法编码得到的字符串
-	 * 
-	 * <pre>
-	 * 调用encode(long dest)方法成功得到的数据是用此方法解码都不会出错
-	 * </pre>
 	 * 
 	 * @param str
 	 * @return
