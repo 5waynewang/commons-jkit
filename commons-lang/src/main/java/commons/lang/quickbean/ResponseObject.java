@@ -57,16 +57,8 @@ public class ResponseObject<T> implements Serializable {
 	public void setResult(T result) {
 		this.result = result;
 	}
-
-	/**
-	 * {@link #isSuccess()}
-	 */
-	@Deprecated
+	
 	public boolean success() {
-		return this.isSuccess();
-	}
-
-	public boolean isSuccess() {
 		return this.code == 200;
 	}
 }
