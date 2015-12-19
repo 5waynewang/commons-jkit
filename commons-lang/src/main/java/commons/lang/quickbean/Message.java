@@ -181,7 +181,8 @@ public class Message implements Serializable {
 	 * 
 	 * @param msg0
 	 * @param msg1
-	 * @param separator 拼接符
+	 * @param separator
+	 *            拼接符
 	 * @return
 	 */
 	public static String contactMsg(String msg0, String msg1, String separator) {
@@ -192,8 +193,7 @@ public class Message implements Serializable {
 		if (StringUtils.isNotBlank(msg1)) {
 			if (msg0.endsWith(separator)) {
 
-			}
-			else {
+			} else {
 				result.append(separator);
 			}
 			result.append(msg1);
@@ -223,6 +223,11 @@ public class Message implements Serializable {
 
 	public void putAttribute(String key, Object value) {
 		attributes.put(key, value);
+	}
+
+	public Message attribute(String key, Object value) {
+		this.putAttribute(key, value);
+		return this;
 	}
 
 	/**
