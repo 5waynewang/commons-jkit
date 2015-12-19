@@ -1,7 +1,7 @@
 /**
  * 
  */
-package wcommons.lang;
+package commons.lang;
 
 import java.util.Date;
 import java.util.HashMap;

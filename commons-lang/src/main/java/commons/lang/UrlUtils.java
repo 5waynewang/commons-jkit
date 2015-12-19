@@ -34,10 +34,6 @@ public class UrlUtils {
 	public static final char POINT_CHAR = '.';
 	public static final String POINT_STR = ".";
 
-	public static final String STRUTS2_ACTION_SUFFIX = ".action";
-	public static final String STRUTS2_ACTION_PREFIX = "action=";
-	public static final String STRUTS2_REGEX = "^([\\d\\D]*\\/)?[\\d\\D]+(\\![\\d\\D]+)?\\.action(\\?[\\d\\D]+)?$";
-
 	/**
 	 * @see #getStringParams(Map, String)
 	 */
@@ -138,7 +134,7 @@ public class UrlUtils {
 		return result.toString();
 	}
 
-	private static void append(StringBuilder result, String name, Object value, boolean encode, String encodeCharset) {
+	static void append(StringBuilder result, String name, Object value, boolean encode, String encodeCharset) {
 		result.append(AND_CHAR).append(name).append(EQUAL_CHAR);
 		if (value != null) {
 			if (encode) {
@@ -276,78 +272,6 @@ public class UrlUtils {
 		}
 
 		return result.toString();
-	}
-
-	/**
-	 * <pre>
-	 * 拆分URL与参数
-	 * 如果参数不规范，会解析错误
-	 * UrlUtils.splitUrlParams(null) = new String[]{"", ""}
-	 * UrlUtils.splitUrlParams("") = new String[]{"", ""}
-	 * UrlUtils.splitUrlParams("/test.do") = new String[]{"/test.do", ""}
-	 * UrlUtils.splitUrlParams("/test.do?action=list") = new String[]{"/test.do", "action=list"}
-	 * UrlUtils.splitUrlParams("/test.action") = new String[]{"/test.action", ""}
-	 * UrlUtils.splitUrlParams("/test.action?action=list") = new String[]{"/test.action", "action=list"}
-	 * UrlUtils.splitUrlParams("/test!list.action") = new String[]{"/test.action", "action=list"}
-	 * UrlUtils.splitUrlParams("/test!list.action?search=g.cn") = new String[]{"/test.action", "action=list&search=g.cn"}
-	 * </pre>
-	 * 
-	 * @param url
-	 * @return
-	 */
-	public static String[] splitUrlParams(String url) {
-		if (StringUtils.isBlank(url)) {
-			return new String[] { StringUtils.EMPTY, StringUtils.EMPTY };
-		}
-
-		// struts2
-		if (url.matches(STRUTS2_REGEX)) {
-			// 问号的位置
-			final int qIdx = url.indexOf(QUESTION_CHAR);
-			// 没有问号，说明没有参数
-			// /test!list.action
-			if (qIdx < 0) {
-				// 惊叹号的位置
-				final int eIdx = url.indexOf(EXCLAMATION_CHAR);
-				// 没有惊叹号
-				// /test.action
-				if (eIdx < 0) {
-					return new String[] { url, StringUtils.EMPTY };
-				}
-				// 有惊叹号
-				// /test!list.action
-				// .action 的位置
-				final int sIdx = url.lastIndexOf(STRUTS2_ACTION_SUFFIX);
-				final String action = url.substring(eIdx + 1, sIdx);
-
-				return new String[] { url.substring(0, eIdx) + STRUTS2_ACTION_SUFFIX, STRUTS2_ACTION_PREFIX + action };
-			}
-			else {
-				// .action 的位置
-				final int sIdx = url.lastIndexOf(STRUTS2_ACTION_SUFFIX, qIdx);
-				// 惊叹号的位置
-				final int eIdx = url.lastIndexOf(EXCLAMATION_CHAR, sIdx);
-				// 没有惊叹号
-				// /test.action?search=g.cn
-				if (eIdx < 0) {
-					return new String[] { url.substring(0, qIdx), url.substring(qIdx + 1) };
-				}
-
-				// 有惊叹号
-				// /test!list.action?search=g.cn
-				final String action = url.substring(eIdx + 1, sIdx);
-
-				return new String[] { url.substring(0, eIdx) + STRUTS2_ACTION_SUFFIX,
-						STRUTS2_ACTION_PREFIX + action + AND_CHAR + url.substring(qIdx + 1) };
-			}
-		}
-
-		final int index = url.indexOf(QUESTION_CHAR);
-		if (index < 0) {
-			return new String[] { url.trim(), StringUtils.EMPTY };
-		}
-
-		return new String[] { url.substring(0, index).trim(), url.substring(index + 1).trim() };
 	}
 
 	/**
