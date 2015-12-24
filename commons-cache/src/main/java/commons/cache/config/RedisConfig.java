@@ -21,6 +21,12 @@ public class RedisConfig implements Serializable {
 	private int protocolTimeoutMillis = 20000;
 	private String password;
 
+	// redis clusters 地址 逗号或空格分隔
+	private String clusters;
+	private int connectionTimeout = 20000;
+	private int soTimeout = 20000;
+	private int maxRedirections = 3;
+
 	// 连接池最大连接数
 	private int maxTotal = 50;
 	// 连接池中最多可空闲的连接数
@@ -126,6 +132,38 @@ public class RedisConfig implements Serializable {
 
 	public void setTimeBetweenEvictionRunsMillis(int timeBetweenEvictionRunsMillis) {
 		this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+	}
+
+	public String getClusters() {
+		return clusters;
+	}
+
+	public void setClusters(String clusters) {
+		this.clusters = clusters;
+	}
+
+	public int getConnectionTimeout() {
+		return connectionTimeout;
+	}
+
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
+	}
+
+	public int getSoTimeout() {
+		return soTimeout;
+	}
+
+	public void setSoTimeout(int soTimeout) {
+		this.soTimeout = soTimeout;
+	}
+
+	public int getMaxRedirections() {
+		return maxRedirections;
+	}
+
+	public void setMaxRedirections(int maxRedirections) {
+		this.maxRedirections = maxRedirections;
 	}
 
 }

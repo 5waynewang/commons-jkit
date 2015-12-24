@@ -3,22 +3,26 @@
  */
 package commons.cache.redis;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.util.SafeEncoder;
+
 import com.alibaba.fastjson.JSON;
 
 import commons.cache.TestedModel;
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CancelCasException;
-import commons.cache.facade.redis.Hessian2JedisFacade;
 import commons.cache.facade.redis.JedisFacade;
 import commons.cache.operation.CasOperation;
 import commons.lang.concurrent.NamedThreadFactory;
@@ -31,8 +35,8 @@ import commons.lang.concurrent.NamedThreadFactory;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 5:16:08 PM Jul 9, 2015
  */
-@org.junit.Ignore
-public class Hessian2JedisFacadeTest {
+//@org.junit.Ignore
+public class JedisFacadeTest {
 
 	JedisFacade testedObject;
 
@@ -42,7 +46,7 @@ public class Hessian2JedisFacadeTest {
 	public void before() throws Exception {
 		final RedisConfig redisConfig = new RedisConfig();
 		redisConfig.setHost("10.8.100.2");
-		this.testedObject = new Hessian2JedisFacade(redisConfig);
+		this.testedObject = new JedisFacade(redisConfig);
 	}
 
 	@Test
@@ -74,8 +78,8 @@ public class Hessian2JedisFacadeTest {
 		final CountDownLatch cdl = new CountDownLatch(count * 2);
 
 		final int corePoolSize = 8;
-		final ExecutorService taskThreadExecutor = Executors.newFixedThreadPool(corePoolSize,
-				new NamedThreadFactory("TakeThread_"));
+		final ExecutorService taskThreadExecutor = Executors.newFixedThreadPool(corePoolSize, new NamedThreadFactory(
+				"TakeThread_"));
 		for (int i = 0; i < corePoolSize; i++) {
 			taskThreadExecutor.submit(new Runnable() {
 				@Override
@@ -85,10 +89,12 @@ public class Hessian2JedisFacadeTest {
 							final TestedModel value = testedObject.brpop(0, key1, key2);
 							if (value == null) {
 								System.err.println(Thread.currentThread().getName() + " take 0 data");
-							} else {
+							}
+							else {
 								System.err.println(Thread.currentThread().getName() + " take 1 data");
 							}
-						} finally {
+						}
+						finally {
 							cdl.countDown();
 						}
 					}
@@ -220,7 +226,8 @@ public class Hessian2JedisFacadeTest {
 							}
 						});
 						System.out.println(Thread.currentThread().getName() + " " + ret);
-					} finally {
+					}
+					finally {
 						cdl.countDown();
 					}
 				}
@@ -244,5 +251,27 @@ public class Hessian2JedisFacadeTest {
 
 		final Long incr2 = this.testedObject.incr(key, 1, 5, TimeUnit.MINUTES);
 		Assert.assertEquals(incr2.longValue(), 6);
+	}
+
+	@Test
+	public void testMincr() {
+		final String[] keys = { "lucifer_test_incr1", "lucifer_test_incr2", "lucifer_test_incr3" };
+		final Map<String, Long> results1 = new HashMap<String, Long>();
+		for (String key : keys) {
+			final Long value = this.testedObject.incr(key, ThreadLocalRandom.current().nextInt(1, 100));
+			results1.put(key, value);
+
+			final byte[] bs = SafeEncoder.encode(value.toString());
+			for (byte b : bs) {
+				System.out.print(b);
+				System.out.print(" ");
+			}
+			System.out.println();
+		}
+
+		final Map<String, Long> results = this.testedObject.mincr(keys);
+		for (Map.Entry<String, Long> entry : results.entrySet()) {
+			Assert.assertEquals(entry.getValue().longValue(), results1.get(entry.getKey()).longValue());
+		}
 	}
 }

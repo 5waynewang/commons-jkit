@@ -6,16 +6,18 @@ package commons.cache.facade.redis;
 import java.io.IOException;
 
 import commons.cache.config.RedisConfig;
+import commons.cache.serialization.CacheSerializable;
 import commons.serialization.hessian.Hessian2Serialization;
 
 /**
  * <pre>
- *	
+ *
  * </pre>
+ * 
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 3:07:34 PM Jul 9, 2015
  */
-public class Hessian2JedisFacade extends JedisFacade {
+public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements CacheSerializable {
 	public Hessian2JedisFacade(RedisConfig redisConfig) {
 		super(redisConfig);
 	}
@@ -26,11 +28,6 @@ public class Hessian2JedisFacade extends JedisFacade {
 
 	<O> O deserialize(byte[] data) throws IOException {
 		return Hessian2Serialization.deserialize(data);
-	}
-
-	@Override
-	protected void registerClass(Class<?> clazz) {
-		// do nothing
 	}
 
 	@Override

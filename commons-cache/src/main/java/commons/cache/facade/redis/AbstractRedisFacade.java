@@ -5,6 +5,7 @@ package commons.cache.facade.redis;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -235,6 +236,16 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 			return this.scard(key);
 		} catch (Exception e) {
 			logger.warn("redis:scard", e);
+			return null;
+		}
+	}
+	
+	@Override
+	public <K> Map<K, Long> mincrQuietly(K... keys) {
+		try {
+			return this.mincr(keys);
+		} catch (Exception e) {
+			logger.warn("redis:mincr", e);
 			return null;
 		}
 	}

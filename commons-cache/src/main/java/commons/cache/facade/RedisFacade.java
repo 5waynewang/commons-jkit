@@ -4,6 +4,7 @@
 package commons.cache.facade;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -69,4 +70,8 @@ public interface RedisFacade extends CacheFacade {
 	<K> Long scard(K key);
 
 	<K> Long scardQuietly(K key);
+	
+	<K> Map<K, Long> mincr(K... keys);
+	
+	<K> Map<K, Long> mincrQuietly(K... keys);
 }
