@@ -4,6 +4,7 @@
 package commons.cache.facade;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import commons.cache.operation.CasOperation;
@@ -21,6 +22,10 @@ public interface CacheFacade {
 	<K, V> V get(K key);
 
 	<K, V> V getQuietly(K key);
+
+	<K, V> Map<K, V> mget(K... keys);
+
+	<K, V> Map<K, V> mgetQuietly(K... keys);
 
 	<K, V> void set(K key, V value);
 

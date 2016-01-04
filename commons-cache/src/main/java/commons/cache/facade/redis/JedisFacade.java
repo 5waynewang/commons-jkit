@@ -3,12 +3,9 @@
  */
 package commons.cache.facade.redis;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +18,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.io.IOUtils;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
-import redis.clients.util.RedisInputStream;
+
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.exception.CancelCasException;
@@ -81,6 +76,24 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:get", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, V> Map<K, V> mget(K... keys) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[][] rawKeys = this.serializeKeys(keys);
+
+			final List<byte[]> rawValues = resource.mget(rawKeys);
+
+			return this.toGetMap(keys, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:mget", e);
 		}
 		finally {
 			this.returnResource(resource);
@@ -642,42 +655,150 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 	@Override
 	public <K> Map<K, Long> mincr(K... keys) {
-		if (ObjectUtils.hasNull(keys)) {
-			throw new IllegalArgumentException("keys must not contain null");
-		}
-		
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
 
 			final List<byte[]> rawValues = resource.mget(rawKeys);
-			if (rawValues == null || rawValues.isEmpty()) {
-				return Collections.emptyMap();
-			}
 
-			RedisInputStream ris = null;
-
-			final Map<K, Long> results = new HashMap<K, Long>();
-			for (int i = 0; i < keys.length; i++) {
-				try {
-					final int length = rawValues.get(i).length;
-					final int size = 2 + length;
-					final byte[] buf = new byte[size];
-					System.arraycopy(rawValues.get(i), 0, buf, 0, length);
-					buf[length] = '\r';
-					buf[length + 1] = '\n';
-
-					ris = new RedisInputStream(new ByteArrayInputStream(buf));
-					results.put(keys[i], ris.readLongCrLf());
-				}
-				finally {
-					IOUtils.closeQuietly(ris);
-				}
-			}
-			return results;
+			return this.toIncrMap(keys, rawValues);
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:mincr", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F, V> void hset(K key, F field, V value) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawField = this.serializeKey(key);
+
+			final byte[] rawValue = this.serializeValue(key);
+
+			resource.hset(rawKey, rawField, rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hset", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F, V> V hget(K key, F field) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawField = this.serializeKey(key);
+
+			final byte[] rawValue = resource.hget(rawKey, rawField);
+
+			return this.deserializeValue(rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hget", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F, V> Long hincr(K key, F field, long value) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawField = this.serializeKey(key);
+
+			return resource.hincrBy(rawKey, rawField, value);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hincr", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F, V> Map<F, V> hmget(K key, F... fields) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawFields = this.serializeKeys(fields);
+
+			final List<byte[]> rawValues = resource.hmget(rawKey, rawFields);
+
+			return this.toGetMap(fields, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hmget", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F> Map<F, Long> hmincr(K key, F... fields) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawFields = this.serializeKeys(fields);
+
+			final List<byte[]> rawValues = resource.hmget(rawKey, rawFields);
+
+			return this.toIncrMap(fields, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hmincr", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F> void hdel(K key, F... fields) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawFields = this.serializeKeys(fields);
+
+			resource.hdel(rawKey, rawFields);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hdel", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <K, F> Boolean hexists(K key, F field) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawField = this.serializeKey(field);
+
+			return resource.hexists(rawKey, rawField);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hexists", e);
 		}
 		finally {
 			this.returnResource(resource);

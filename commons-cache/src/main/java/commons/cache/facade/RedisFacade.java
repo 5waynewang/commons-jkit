@@ -70,8 +70,36 @@ public interface RedisFacade extends CacheFacade {
 	<K> Long scard(K key);
 
 	<K> Long scardQuietly(K key);
-	
+
 	<K> Map<K, Long> mincr(K... keys);
-	
+
 	<K> Map<K, Long> mincrQuietly(K... keys);
+
+	<K, F, V> void hset(K key, F field, V value);
+
+	<K, F, V> void hsetQuietly(K key, F field, V value);
+
+	<K, F, V> V hget(K key, F field);
+
+	<K, F, V> V hgetQuietly(K key, F field);
+
+	<K, F, V> Long hincr(K key, F field, long value);
+
+	<K, F, V> Long hincrQuietly(K key, F field, long value);
+
+	<K, F, V> Map<F, V> hmget(K key, F... fields);
+
+	<K, F, V> Map<F, V> hmgetQuietly(K key, F... fields);
+
+	<K, F> Map<F, Long> hmincr(K key, F... fields);
+
+	<K, F> Map<F, Long> hmincrQuietly(K key, F... fields);
+	
+	<K, F> void hdel(K key, F... fields);
+	
+	<K, F> void hdelQuietly(K key, F... fields);
+	
+	<K, F> Boolean hexists(K key, F field);
+
+	<K, F> Boolean hexistsQuietly(K key, F field);
 }

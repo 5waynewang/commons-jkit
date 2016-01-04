@@ -3,8 +3,16 @@
  */
 package commons.cache.facade.redis;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
+
+import redis.clients.util.RedisInputStream;
 import commons.cache.config.RedisConfig;
 import commons.cache.serialization.CacheSerializable;
 import commons.serialization.hessian.Hessian2Serialization;
@@ -62,4 +70,42 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 		return deserialize(rawValue);
 	}
 
+	protected <K, V> Map<K, V> toGetMap(K[] keys, List<byte[]> rawValues) throws ClassNotFoundException, IOException {
+		if (rawValues == null || rawValues.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		final Map<K, V> results = new HashMap<K, V>();
+		for (int i = 0; i < keys.length; i++) {
+			results.put(keys[i], (V) this.deserializeValue(rawValues.get(i)));
+		}
+		return results;
+	}
+
+	protected <K> Map<K, Long> toIncrMap(final K[] keys, final List<byte[]> rawValues) {
+		if (rawValues == null || rawValues.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		RedisInputStream ris = null;
+
+		final Map<K, Long> results = new HashMap<K, Long>();
+		for (int i = 0; i < keys.length; i++) {
+			try {
+				final int length = rawValues.get(i).length;
+				final int size = 2 + length;
+				final byte[] buf = new byte[size];
+				System.arraycopy(rawValues.get(i), 0, buf, 0, length);
+				buf[length] = '\r';
+				buf[length + 1] = '\n';
+
+				ris = new RedisInputStream(new ByteArrayInputStream(buf));
+				results.put(keys[i], ris.readLongCrLf());
+			}
+			finally {
+				IOUtils.closeQuietly(ris);
+			}
+		}
+		return results;
+	}
 }
