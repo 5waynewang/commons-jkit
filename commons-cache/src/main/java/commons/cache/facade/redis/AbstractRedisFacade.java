@@ -100,6 +100,17 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
+	public <K, V> Boolean setnxQuietly(K key, V value) {
+		try {
+			return this.setnx(key, value);
+		}
+		catch (Exception e) {
+			logger.warn("redis:setnx", e);
+			return null;
+		}
+	}
+
+	@Override
 	public <K, V> Boolean cas(final K key, final CasOperation<V> casOperation) {
 		final int timeout = this.redisConfig.getProtocolTimeoutMillis();
 
@@ -155,6 +166,28 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 		}
 		catch (Exception e) {
 			logger.warn("redis:incr", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K> Long decrQuietly(K key, long delta) {
+		try {
+			return this.decr(key, delta);
+		}
+		catch (Exception e) {
+			logger.warn("redis:decr", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K> Long decrQuietly(K key, long delta, long timeout, TimeUnit unit) {
+		try {
+			return this.decr(key, delta, timeout, unit);
+		}
+		catch (Exception e) {
+			logger.warn("redis:decr", e);
 			return null;
 		}
 	}
@@ -302,6 +335,17 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
+	public <K, F, V> Map<F, V> hgetAllQuietly(K key) {
+		try {
+			return this.hgetAll(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:hgetAll", e);
+			return null;
+		}
+	}
+
+	@Override
 	public <K, F, V> Long hincrQuietly(K key, F field, long value) {
 		try {
 			return this.hincr(key, field, value);
@@ -309,6 +353,16 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 		catch (Exception e) {
 			logger.warn("redis:hincr", e);
 			return null;
+		}
+	}
+
+	@Override
+	public <K, F, V> void hmsetQuietly(K key, Map<F, V> value) {
+		try {
+			this.hmset(key, value);
+		}
+		catch (Exception e) {
+			logger.warn("redis:hmset", e);
 		}
 	}
 
@@ -351,6 +405,28 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 		}
 		catch (Exception e) {
 			logger.warn("redis:hexists", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K, V> Set<V> hkeysQuietly(K key) {
+		try {
+			return this.hkeys(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:hkeys", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K, V> List<V> hvalsQuietly(K key) {
+		try {
+			return this.hvals(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:hvals", e);
 			return null;
 		}
 	}

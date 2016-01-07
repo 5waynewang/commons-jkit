@@ -58,6 +58,14 @@ public interface CacheFacade {
 	<K> Long incr(K key, long delta, long timeout, TimeUnit unit);
 
 	<K> Long incrQuietly(K key, long delta, long timeout, TimeUnit unit);
+	
+	<K> Long decr(K key, long delta);
+
+	<K> Long decrQuietly(K key, long delta);
+
+	<K> Long decr(K key, long delta, long timeout, TimeUnit unit);
+
+	<K> Long decrQuietly(K key, long delta, long timeout, TimeUnit unit);
 
 	<K, V> Boolean cas(K key, CasOperation<V> casOperation);
 

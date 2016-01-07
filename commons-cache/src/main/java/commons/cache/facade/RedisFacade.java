@@ -16,6 +16,10 @@ import java.util.Set;
  * @since 5:13:53 PM Nov 14, 2015
  */
 public interface RedisFacade extends CacheFacade {
+	<K, V> Boolean setnx(K key, V value);
+	
+	<K, V> Boolean setnxQuietly(K key, V value);
+	
 	<K, V> V getSet(K key, V value);
 
 	<K, V> V getSetQuietly(K key, V value);
@@ -79,9 +83,17 @@ public interface RedisFacade extends CacheFacade {
 
 	<K, F, V> void hsetQuietly(K key, F field, V value);
 
+	<K, F, V> void hmset(K key, Map<F, V> hash);
+
+	<K, F, V> void hmsetQuietly(K key, Map<F, V> hash);
+
 	<K, F, V> V hget(K key, F field);
 
 	<K, F, V> V hgetQuietly(K key, F field);
+
+	<K, F, V> Map<F, V> hgetAll(K key);
+
+	<K, F, V> Map<F, V> hgetAllQuietly(K key);
 
 	<K, F, V> Long hincr(K key, F field, long value);
 
@@ -94,12 +106,20 @@ public interface RedisFacade extends CacheFacade {
 	<K, F> Map<F, Long> hmincr(K key, F... fields);
 
 	<K, F> Map<F, Long> hmincrQuietly(K key, F... fields);
-	
+
 	<K, F> void hdel(K key, F... fields);
-	
+
 	<K, F> void hdelQuietly(K key, F... fields);
-	
+
 	<K, F> Boolean hexists(K key, F field);
 
 	<K, F> Boolean hexistsQuietly(K key, F field);
+
+	<K, V> Set<V> hkeys(K key);
+
+	<K, V> Set<V> hkeysQuietly(K key);
+
+	<K, V> List<V> hvals(K key);
+
+	<K, V> List<V> hvalsQuietly(K key);
 }
