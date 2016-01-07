@@ -5,7 +5,6 @@ package commons.cache.facade.redis;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 import redis.clients.util.RedisInputStream;
+
 import commons.cache.config.RedisConfig;
 import commons.cache.serialization.CacheSerializable;
 import commons.serialization.hessian.Hessian2Serialization;
@@ -46,6 +46,13 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 		return serialize(key);
 	}
 
+	protected <K> byte[] serializeKeyQuietly(K key) throws IOException {
+		if (key == null) {
+			return null;
+		}
+		return serialize(key);
+	}
+
 	@Override
 	public <K> K deserializeKey(byte[] rawKey) throws IOException, ClassNotFoundException {
 		if (rawKey == null) {
@@ -70,9 +77,39 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 		return deserialize(rawValue);
 	}
 
+	protected <K> byte[][] serializeKeys(K... keys) throws IOException {
+		final byte[][] rawKeys = new byte[keys.length][];
+		int i = 0;
+		for (K key : keys) {
+			final byte[] rawKey = this.serializeKeyQuietly(key);
+
+			if (rawKey == null) {
+				throw new IllegalArgumentException("must not contains null key");
+			}
+
+			rawKeys[i++] = rawKey;
+		}
+		return rawKeys;
+	}
+
+	protected <V> byte[][] serializeValues(V... values) throws IOException {
+		final byte[][] rawValues = new byte[values.length][];
+		int i = 0;
+		for (V value : values) {
+			final byte[] rawValue = this.serializeValue(value);
+
+			if (rawValue == null) {
+				throw new IllegalArgumentException("must not contains null value");
+			}
+
+			rawValues[i++] = rawValue;
+		}
+		return rawValues;
+	}
+
 	protected <K, V> Map<K, V> toGetMap(K[] keys, List<byte[]> rawValues) throws ClassNotFoundException, IOException {
 		if (rawValues == null || rawValues.isEmpty()) {
-			return Collections.emptyMap();
+			return new HashMap<K, V>();
 		}
 
 		final Map<K, V> results = new HashMap<K, V>();
@@ -84,7 +121,7 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 
 	protected <K> Map<K, Long> toIncrMap(final K[] keys, final List<byte[]> rawValues) {
 		if (rawValues == null || rawValues.isEmpty()) {
-			return Collections.emptyMap();
+			return new HashMap<K, Long>();
 		}
 
 		RedisInputStream ris = null;
@@ -92,10 +129,14 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 		final Map<K, Long> results = new HashMap<K, Long>();
 		for (int i = 0; i < keys.length; i++) {
 			try {
-				final int length = rawValues.get(i).length;
+				final byte[] rawValue = rawValues.get(i);
+				if (rawValue == null || rawValue.length == 0) {
+					continue;
+				}
+				final int length = rawValue.length;
 				final int size = 2 + length;
 				final byte[] buf = new byte[size];
-				System.arraycopy(rawValues.get(i), 0, buf, 0, length);
+				System.arraycopy(rawValue, 0, buf, 0, length);
 				buf[length] = '\r';
 				buf[length + 1] = '\n';
 

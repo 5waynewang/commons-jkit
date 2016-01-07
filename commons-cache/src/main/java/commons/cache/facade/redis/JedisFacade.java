@@ -3,10 +3,8 @@
  */
 package commons.cache.facade.redis;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,24 +47,6 @@ public class JedisFacade extends Hessian2JedisFacade {
 	private JedisPoolConfig poolConfig;
 	private JedisPool jedisPool;
 	private ThreadPoolExecutor redisCasExecutor;
-
-	protected <K> byte[][] serializeKeys(K... keys) throws IOException {
-		final byte[][] rawKeys = new byte[keys.length][];
-		int i = 0;
-		for (K key : keys) {
-			rawKeys[i++] = this.serializeKey(key);
-		}
-		return rawKeys;
-	}
-
-	protected <V> byte[][] serializeValues(V... values) throws IOException {
-		final byte[][] rawValues = new byte[values.length][];
-		int i = 0;
-		for (V value : values) {
-			rawValues[i++] = this.serializeValue(value);
-		}
-		return rawValues;
-	}
 
 	@Override
 	public <K, V> V get(K key) {
@@ -281,15 +261,14 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 	@Override
 	public <K> void delete(Collection<K> keys) {
+		if (keys == null || keys.isEmpty()) {
+			return;
+		}
 		final Jedis resource = this.getResource();
 		try {
-			final byte[][] rawKey = new byte[keys.size()][];
-			int i = 0;
-			for (K key : keys) {
-				rawKey[i++] = this.serializeKey(key);
-			}
+			final byte[][] rawKeys = this.serializeKeys(keys.toArray());
 
-			resource.del(rawKey);
+			resource.del(rawKeys);
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:del", e);
@@ -327,9 +306,9 @@ public class JedisFacade extends Hessian2JedisFacade {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[][] rawValue = this.serializeValues(values);
+			final byte[][] rawValues = this.serializeValues(values);
 
-			final Long result = resource.sadd(rawKey, rawValue);
+			final Long result = resource.sadd(rawKey, rawValues);
 
 			return result != null && result > 0;
 		}
@@ -343,17 +322,13 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 	@Override
 	public <K, V> Boolean srem(K key, V... values) {
-		if (ObjectUtils.hasNull(values)) {
-			throw new IllegalArgumentException("values must not contain null");
-		}
-
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[][] rawValue = this.serializeValues(values);
+			final byte[][] rawValues = this.serializeValues(values);
 
-			final Long result = resource.srem(rawKey, rawValue);
+			final Long result = resource.srem(rawKey, rawValues);
 
 			return result != null && result > 0;
 		}
@@ -491,7 +466,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 			final List<byte[]> results = resource.lrange(rawKey, start, end);
 			if (results == null || results.isEmpty()) {
-				return new ArrayList<V>();
+				return new ArrayList<V>(0);
 			}
 			final List<V> values = new ArrayList<V>(results.size());
 			for (byte[] result : results) {
@@ -529,17 +504,13 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 	@Override
 	public <K, V> Long rpush(K key, V... values) {
-		if (ObjectUtils.hasNull(values)) {
-			throw new IllegalArgumentException("values must not contain null");
-		}
-
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[][] rawValue = this.serializeValues(values);
+			final byte[][] rawValues = this.serializeValues(values);
 
-			return resource.rpush(rawKey, rawValue);
+			return resource.rpush(rawKey, rawValues);
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:rpush", e);
@@ -551,17 +522,13 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 	@Override
 	public <K, V> Long lpush(K key, V... values) {
-		if (ObjectUtils.hasNull(values)) {
-			throw new IllegalArgumentException("values must not contain null");
-		}
-
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			final byte[][] rawValue = this.serializeValues(values);
+			final byte[][] rawValues = this.serializeValues(values);
 
-			return resource.lpush(rawKey, rawValue);
+			return resource.lpush(rawKey, rawValues);
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:lpush", e);
@@ -740,7 +707,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 			final byte[] rawField = this.serializeKey(field);
 
-			final byte[] rawValue = this.serializeValue(key);
+			final byte[] rawValue = this.serializeValue(value);
 
 			resource.hset(rawKey, rawField, rawValue);
 		}
@@ -780,7 +747,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 
 			final Map<byte[], byte[]> rawValues = resource.hgetAll(rawKey);
 			if (rawValues == null || rawValues.isEmpty()) {
-				return Collections.emptyMap();
+				return new HashMap<F, V>();
 			}
 
 			final Map<F, V> results = new HashMap<F, V>();
@@ -831,7 +798,14 @@ public class JedisFacade extends Hessian2JedisFacade {
 			final Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
 			for (Map.Entry<F, V> entry : value.entrySet()) {
 				final byte[] rawField = this.serializeKey(entry.getKey());
+				if (rawField == null) {
+					throw new IllegalArgumentException("must not contains null field");
+				}
+				
 				final byte[] rawValue = this.serializeValue(entry.getValue());
+				if (rawValue == null) {
+					throw new IllegalArgumentException("must not contains null value");
+				}
 
 				hash.put(rawField, rawValue);
 			}

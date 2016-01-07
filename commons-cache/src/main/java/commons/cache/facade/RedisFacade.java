@@ -83,9 +83,9 @@ public interface RedisFacade extends CacheFacade {
 
 	<K, F, V> void hsetQuietly(K key, F field, V value);
 
-	<K, F, V> void hmset(K key, Map<F, V> hash);
+	<K, F, V> void hmset(K key, Map<F, V> value);
 
-	<K, F, V> void hmsetQuietly(K key, Map<F, V> hash);
+	<K, F, V> void hmsetQuietly(K key, Map<F, V> value);
 
 	<K, F, V> V hget(K key, F field);
 

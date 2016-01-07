@@ -41,6 +41,28 @@ public class JedisClusterFacadeTest {
 	}
 
 	@Test
+	public void testGet() {
+		final String key = "lucifer_test_get_set";
+		final String value = "lucifer_test_get_set_value";
+
+		this.testedObject.set(key, value, 5, TimeUnit.MINUTES);
+
+		final String v = this.testedObject.get(key);
+
+		Assert.assertEquals(value, v);
+
+	}
+
+	@Test
+	public void testSadd() {
+		final String key = "lucifer_test_sadd";
+
+		this.testedObject.sadd(key, "1", null, "2");
+
+		System.out.println(this.testedObject.scard(key)); 
+	}
+
+	@Test
 	public void testIncrAndGet() {
 		final String key = "lucifer_test_key_incr_and_get";
 		this.testedObject.delete(key);
@@ -51,18 +73,19 @@ public class JedisClusterFacadeTest {
 		final Long incr2 = this.testedObject.incr(key, 1, 5, TimeUnit.MINUTES);
 		Assert.assertEquals(incr2.longValue(), 6);
 	}
-	
+
 	@Test
 	public void testGetCRC16() {
-		for(int i = 1;i<=10;i++) {
-			String key = "key"+i;
+		for (int i = 1; i <= 10; i++) {
+			String key = "key" + i;
 			System.out.println(key + " = " + JedisClusterCRC16.getSlot(key));
 		}
 	}
 
 	@Test
 	public void testMincr() {
-		final String[] keys = { "{lucifer_test_incr}1", "{lucifer_test_incr}2", "{lucifer_test_incr}3", "{lucifer_test_incr}4" };
+		final String[] keys = { "{lucifer_test_incr}1", "{lucifer_test_incr}2", "{lucifer_test_incr}3",
+				"{lucifer_test_incr}4" };
 		final Map<String, Long> results1 = new HashMap<String, Long>();
 		for (String key : keys) {
 			final Long value = this.testedObject.incr(key, ThreadLocalRandom.current().nextInt(1, 100));
