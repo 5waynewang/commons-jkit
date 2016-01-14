@@ -430,4 +430,48 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 			return null;
 		}
 	}
+
+	@Override
+	public <K, F> Long hlenQuietly(K key) {
+		try {
+			return this.hlen(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:hlen", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K, F> Long zaddQuietly(K key, Map<F, Double> scoreMembers) {
+		try {
+			return this.zadd(key, scoreMembers);
+		}
+		catch (Exception e) {
+			logger.warn("redis:zadd", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K, F> Long zremrangeByRankQuietly(K key, long start, long end) {
+		try {
+			return this.zremrangeByRank(key, start, end);
+		}
+		catch (Exception e) {
+			logger.warn("redis:zremrangeByRank", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <K, F> Set<F> zrangeQuietly(K key, long start, long end) {
+		try {
+			return this.zrange(key, start, end);
+		}
+		catch (Exception e) {
+			logger.warn("redis:zrange", e);
+			return null;
+		}
+	}
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,12 +17,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import redis.clients.jedis.DefaultSlotMatcher;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.SlotMatcher;
+import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.util.JedisClusterCRC16;
 
 import com.google.common.collect.Lists;
+
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
@@ -657,7 +661,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 				if (rawField == null) {
 					throw new IllegalArgumentException("must not contains null field");
 				}
-				
+
 				final byte[] rawValue = this.serializeValue(entry.getValue());
 				if (rawValue == null) {
 					throw new IllegalArgumentException("must not contains null value");
@@ -760,6 +764,74 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:hvals", e);
+		}
+	}
+
+	@Override
+	public <K, F> Long hlen(K key) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			return this.jedisCluster.hlen(rawKey);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:hlen", e);
+		}
+	}
+
+	@Override
+	public <K, F> Long zadd(K key, Map<F, Double> scoreMembers) {
+		if (scoreMembers == null || scoreMembers.isEmpty()) {
+			return 0L;
+		}
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final Map<byte[], Double> rawScoreMembers = new HashMap<byte[], Double>();
+			for (Map.Entry<F, Double> entry : scoreMembers.entrySet()) {
+				final byte[] rawField = this.serializeKey(entry.getKey());
+
+				rawScoreMembers.put(rawField, entry.getValue());
+			}
+
+			return this.jedisCluster.zadd(rawKey, rawScoreMembers, ZAddParams.zAddParams());
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:zadd", e);
+		}
+	}
+
+	@Override
+	public <K, F> Long zremrangeByRank(K key, long start, long end) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			return this.jedisCluster.zremrangeByRank(rawKey, start, end);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:zremrangeByRank", e);
+		}
+	}
+
+	@Override
+	public <K, F> Set<F> zrange(K key, long start, long end) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final Set<byte[]> rawFields = this.jedisCluster.zrange(rawKey, start, end);
+
+			final Set<F> fields = new LinkedHashSet<F>();
+
+			for (byte[] rawField : rawFields) {
+				final F field = this.deserializeKey(rawField);
+
+				fields.add(field);
+			}
+
+			return fields;
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:zremrangeByRank", e);
 		}
 	}
 }

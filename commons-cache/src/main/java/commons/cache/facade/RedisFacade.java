@@ -17,9 +17,9 @@ import java.util.Set;
  */
 public interface RedisFacade extends CacheFacade {
 	<K, V> Boolean setnx(K key, V value);
-	
+
 	<K, V> Boolean setnxQuietly(K key, V value);
-	
+
 	<K, V> V getSet(K key, V value);
 
 	<K, V> V getSetQuietly(K key, V value);
@@ -122,4 +122,20 @@ public interface RedisFacade extends CacheFacade {
 	<K, V> List<V> hvals(K key);
 
 	<K, V> List<V> hvalsQuietly(K key);
+
+	<K, F> Long hlen(K key);
+
+	<K, F> Long hlenQuietly(K key);
+
+	<K, F> Long zadd(K key, Map<F, Double> scoreMembers);
+
+	<K, F> Long zaddQuietly(K key, Map<F, Double> scoreMembers);
+
+	<K, F> Long zremrangeByRank(K key, long start, long end);
+
+	<K, F> Long zremrangeByRankQuietly(K key, long start, long end);
+
+	<K, F> Set<F> zrange(K key, long start, long end);
+
+	<K, F> Set<F> zrangeQuietly(K key, long start, long end);
 }

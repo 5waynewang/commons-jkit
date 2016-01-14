@@ -5,6 +5,7 @@ package commons.cache.redis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import redis.clients.util.SafeEncoder;
 
 import com.alibaba.fastjson.JSON;
-
 import commons.cache.TestedModel;
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CancelCasException;
@@ -47,6 +47,29 @@ public class JedisFacadeTest {
 		final RedisConfig redisConfig = new RedisConfig();
 		redisConfig.setHost("10.8.100.2");
 		this.testedObject = new JedisFacade(redisConfig);
+	}
+
+	@Test
+	public void testZadd() {
+		this.testedObject.delete("lucifer_test_SortedSet");
+		final Map<String, Double> scoreMembers = new HashMap<>();
+		for (int i = 0; i < 100; i++) {
+			scoreMembers.put("SortedSet_key_" + i, ThreadLocalRandom.current().nextDouble(1, 100));
+		}
+		System.out.println(JSON.toJSONString(scoreMembers, true));
+		System.out.println(this.testedObject.zadd("lucifer_test_SortedSet", scoreMembers));
+	}
+
+	@Test
+	public void testZrange() {
+		final Set<String> members = this.testedObject.zrange("lucifer_test_SortedSet", 0, -1);
+
+		System.out.println(JSON.toJSONString(members, true));
+	}
+	
+	@Test
+	public void testZremrangeByRank() {
+		System.out.println(this.testedObject.zremrangeByRank("lucifer_test_SortedSet", 0, -50));
 	}
 
 	@Test
