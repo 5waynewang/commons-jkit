@@ -258,12 +258,12 @@
         <repository>
             <id>releases</id>
             <name>Nexus Repository</name>
-            <url>http://115.236.11.98:8081/nexus/content/repositories/releases</url>
+            <url>http://gitlab.ixiaopu.com:8081/nexus/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
             <name>Nexus Repository</name>
-            <url>http://115.236.11.98:8081/nexus/content/repositories/snapshots</url>
+            <url>http://gitlab.ixiaopu.com:8081/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 	
@@ -271,7 +271,7 @@
 	    <repository>
             <id>xiangqu</id>
             <name>Nexus Repository</name>
-            <url>http://115.236.11.98:8081/nexus/content/groups/public/</url>
+            <url>http://gitlab.ixiaopu.com:8081/nexus/content/groups/public/</url>
         </repository>
 	</repositories>
 	
