@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>commons-jkit</groupId>
 	<artifactId>commons-jkit</artifactId>
-	<version>0.18-SNAPSHOT</version>
+	<version>0.19-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>commons-jkit v${project.version}</name>
 
@@ -171,6 +171,12 @@
 				<artifactId>guava</artifactId>
 				<version>19.0</version>
 			</dependency>
+			<!-- xstream -->
+			<dependency>
+				<groupId>com.thoughtworks.xstream</groupId>
+				<artifactId>xstream</artifactId>
+				<version>1.4.8</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
@@ -258,12 +264,12 @@
         <repository>
             <id>releases</id>
             <name>Nexus Repository</name>
-            <url>http://gitlab.ixiaopu.com:8081/nexus/content/repositories/releases</url>
+            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
             <name>Nexus Repository</name>
-            <url>http://gitlab.ixiaopu.com:8081/nexus/content/repositories/snapshots</url>
+            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 	
@@ -271,7 +277,7 @@
 	    <repository>
             <id>xiangqu</id>
             <name>Nexus Repository</name>
-            <url>http://gitlab.ixiaopu.com:8081/nexus/content/groups/public/</url>
+            <url>http://nexus.ixiaopu.com:8081/nexus/content/groups/public/</url>
         </repository>
 	</repositories>
 	

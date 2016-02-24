@@ -1,7 +1,7 @@
 /**
  * 
  */
-package commons.lang.concurrent;
+package commons.lang.concurrent.queue;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
