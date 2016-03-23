@@ -1,5 +1,7 @@
 package commons.httpclient;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import org.apache.http.Header;
@@ -71,6 +73,21 @@ public class HttpInvokeResult {
 		}
 
 		return new String(reponseBody, getResponseCharset());
+	}
+	
+	/**
+	 * <pre>
+	 * convert response bytes to InputStream
+	 * </pre>
+	 * @return
+	 */
+	public InputStream getResponseBodyAsStream() {
+		final byte[] reponseBody = this.getResponseBody();
+		if (reponseBody == null) {
+			return new ByteArrayInputStream(new byte[] {});
+		}
+
+		return new ByteArrayInputStream(reponseBody);
 	}
 
 	public ContentType getResponseContentType() {

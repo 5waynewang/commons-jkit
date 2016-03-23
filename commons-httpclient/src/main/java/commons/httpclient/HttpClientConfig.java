@@ -7,7 +7,15 @@ package commons.httpclient;
 public interface HttpClientConfig {
 
 	String HTTP_CHARSET = System.getProperty("http.charset", "UTF-8");
+	
+	/**
+	 * 连接超时时间
+	 */
+	int HTTP_CONN_TIMEOUT = Integer.parseInt(System.getProperty("http.conn.timeout", "5000"));
 
+	/**
+	 * 请求超时时间
+	 */
 	int HTTP_SO_TIMEOUT = Integer.parseInt(System.getProperty("http.so.timeout", "30000"));
 
 	boolean HTTP_KEEPALIVE = Boolean.parseBoolean(System.getProperty("http.keepalive", "true"));
@@ -20,8 +28,6 @@ public interface HttpClientConfig {
 	boolean HTTP_STALE_CHECK = Boolean.parseBoolean(System.getProperty("http.stale.check", "true"));
 	
 	int VALIDATE_AFTER_INACTIVITY = Integer.parseInt(System.getProperty("http.validateAfterInactivity.ms", "300000"));
-
-	int HTTP_CONN_TIMEOUT = Integer.parseInt(System.getProperty("http.conn.timeout", "2000"));
 
 	int HTTP_MAX_TOTAL_CONN = Integer.parseInt(System.getProperty("http.max.total.conn", "50"));
 

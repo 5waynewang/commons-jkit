@@ -66,7 +66,7 @@
 				<artifactId>httpmime</artifactId>
 				<version>${httpcomponents.version}</version>
 			</dependency>
-			<!-- json -->
+			<!-- fastjson -->
 			<dependency>
 				<groupId>com.alibaba</groupId>
 				<artifactId>fastjson</artifactId>
@@ -263,23 +263,13 @@
     <distributionManagement>
         <repository>
             <id>releases</id>
-            <name>Nexus Repository</name>
-            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/releases</url>
+            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/xiangqu-releases</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
-            <name>Nexus Repository</name>
-            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/snapshots</url>
+            <url>http://nexus.ixiaopu.com:8081/nexus/content/repositories/xiangqu-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-	
-	<repositories>
-	    <repository>
-            <id>xiangqu</id>
-            <name>Nexus Repository</name>
-            <url>http://nexus.ixiaopu.com:8081/nexus/content/groups/public/</url>
-        </repository>
-	</repositories>
 	
 	<modules>
 		<module>commons-httpclient</module>
