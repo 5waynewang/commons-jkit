@@ -271,6 +271,13 @@
         </snapshotRepository>
     </distributionManagement>
 	
+	<repositories>
+		<repository>
+			<id>xiangqu</id>
+			<url>http://nexus.ixiaopu.com:8081/nexus/content/groups/public-xiangqu/</url>
+		</repository>
+	</repositories>
+	
 	<modules>
 		<module>commons-httpclient</module>
 		<module>commons-fqueue</module>
