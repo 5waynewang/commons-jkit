@@ -1023,4 +1023,20 @@ public class JedisFacade extends Hessian2JedisFacade {
 			this.returnResource(resource);
 		}
 	}
+	
+	@Override
+	public <K> Boolean exists(K key) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			return resource.exists(rawKey);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:exists", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
 }

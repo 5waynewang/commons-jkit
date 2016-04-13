@@ -474,4 +474,15 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 			return null;
 		}
 	}
+	
+	@Override
+	public <K> Boolean existsQuietly(K key) {
+		try {
+			return this.exists(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:exists", e);
+			return null;
+		}
+	}
 }

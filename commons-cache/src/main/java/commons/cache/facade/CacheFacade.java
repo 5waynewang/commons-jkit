@@ -70,4 +70,8 @@ public interface CacheFacade {
 	<K, V> Boolean cas(K key, CasOperation<V> casOperation);
 
 	<K, V> Boolean cas(K key, CasOperation<V> casOperation, long timeout, TimeUnit unit);
+	
+	<K> Boolean exists(K key);
+	
+	<K> Boolean existsQuietly(K key);
 }

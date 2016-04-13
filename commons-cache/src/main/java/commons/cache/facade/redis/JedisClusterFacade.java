@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import redis.clients.jedis.DefaultSlotMatcher;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.SlotMatcher;
@@ -25,7 +24,6 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.util.JedisClusterCRC16;
 
 import com.google.common.collect.Lists;
-
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
@@ -832,6 +830,18 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:zremrangeByRank", e);
+		}
+	}
+	
+	@Override
+	public <K> Boolean exists(K key) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			return this.jedisCluster.exists(rawKey);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:exists", e);
 		}
 	}
 }
