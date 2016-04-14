@@ -14,9 +14,9 @@ import java.io.IOException;
  * @since 11:42:04 AM Dec 24, 2015
  */
 public interface CacheSerializable {
-	<K> byte[] serializeKey(K key) throws IOException;
+	byte[] serializeKey(String key) throws IOException;
 
-	<K> K deserializeKey(byte[] rawKey) throws IOException, ClassNotFoundException;
+	String deserializeKey(byte[] rawKey) throws IOException;
 
 	<V> byte[] serializeValue(V value) throws IOException;
 

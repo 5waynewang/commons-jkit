@@ -35,18 +35,26 @@ import commons.lang.concurrent.NamedThreadFactory;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 5:16:08 PM Jul 9, 2015
  */
-//@org.junit.Ignore
+@org.junit.Ignore
 public class JedisFacadeTest {
 
 	JedisFacade testedObject;
-
-	final String profile = "dev";
 
 	@Before
 	public void before() throws Exception {
 		final RedisConfig redisConfig = new RedisConfig();
 		redisConfig.setHost("10.8.100.2");
 		this.testedObject = new JedisFacade(redisConfig);
+	}
+
+	@Test
+	public void testIncrGetSet() {
+		final String key = "lucifer_test_incrGetSet";
+		Assert.assertTrue(testedObject.setNoIncr(key, 200));
+		Assert.assertTrue(testedObject.getNoIncr(key) == 200);
+		Assert.assertTrue(testedObject.incr(key, 10) == 210);
+		Assert.assertTrue(testedObject.getNoIncr(key) == 210);
+		testedObject.delete(key);
 	}
 
 	@Test
@@ -66,7 +74,7 @@ public class JedisFacadeTest {
 
 		System.out.println(JSON.toJSONString(members, true));
 	}
-	
+
 	@Test
 	public void testZremrangeByRank() {
 		System.out.println(this.testedObject.zremrangeByRank("lucifer_test_SortedSet", 0, -50));
@@ -126,23 +134,6 @@ public class JedisFacadeTest {
 		}
 
 		cdl.await();
-	}
-
-	@Test
-	public void testSerializeKey() throws Exception {
-		serializeKey('a');
-		serializeKey(Boolean.FALSE);
-		serializeKey(100);
-		serializeKey(100L);
-		serializeKey(100f);
-		serializeKey(100d);
-		serializeKey("abcd");
-	}
-
-	<V> void serializeKey(V v) throws Exception {
-		final byte[] sv = testedObject.serializeKey(v);
-		Assert.assertTrue(sv.length > 0);
-		Assert.assertEquals(testedObject.deserializeKey(sv), v);
 	}
 
 	@Test

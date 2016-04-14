@@ -11,8 +11,9 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import redis.clients.jedis.Protocol;
 import redis.clients.util.RedisInputStream;
-
+import redis.clients.util.SafeEncoder;
 import commons.cache.config.RedisConfig;
 import commons.cache.serialization.CacheSerializable;
 import commons.serialization.hessian.Hessian2Serialization;
@@ -39,26 +40,26 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 	}
 
 	@Override
-	public <K> byte[] serializeKey(K key) throws IOException {
+	public byte[] serializeKey(String key) throws IOException {
 		if (key == null) {
 			throw new IllegalArgumentException("key must not be null");
 		}
-		return serialize(key);
+		return SafeEncoder.encode((String) key);
 	}
 
-	protected <K> byte[] serializeKeyQuietly(K key) throws IOException {
+	protected byte[] serializeKeyQuietly(String key) throws IOException {
 		if (key == null) {
 			return null;
 		}
-		return serialize(key);
+		return SafeEncoder.encode((String) key);
 	}
 
 	@Override
-	public <K> K deserializeKey(byte[] rawKey) throws IOException, ClassNotFoundException {
+	public String deserializeKey(byte[] rawKey) throws IOException {
 		if (rawKey == null) {
 			return null;
 		}
-		return deserialize(rawKey);
+		return new String(rawKey, Protocol.CHARSET);
 	}
 
 	@Override
@@ -77,10 +78,10 @@ public abstract class Hessian2JedisFacade extends AbstractRedisFacade implements
 		return deserialize(rawValue);
 	}
 
-	protected <K> byte[][] serializeKeys(K... keys) throws IOException {
+	protected byte[][] serializeKeys(String... keys) throws IOException {
 		final byte[][] rawKeys = new byte[keys.length][];
 		int i = 0;
-		for (K key : keys) {
+		for (String key : keys) {
 			final byte[] rawKey = this.serializeKeyQuietly(key);
 
 			if (rawKey == null) {

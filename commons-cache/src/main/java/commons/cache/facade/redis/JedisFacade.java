@@ -19,12 +19,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.params.sortedset.ZAddParams;
-
+import redis.clients.util.SafeEncoder;
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.exception.CancelCasException;
@@ -51,7 +55,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	private ThreadPoolExecutor redisCasExecutor;
 
 	@Override
-	public <K, V> V get(K key) {
+	public <V> V get(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -67,7 +71,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Map<K, V> mget(K... keys) {
+	public <V> Map<String, V> mget(String... keys) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
@@ -85,7 +89,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V getSet(K key, V value) {
+	public <V> V getSet(String key, V value) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -103,7 +107,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> void set(K key, V value) {
+	public <V> void set(String key, V value) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -126,7 +130,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean setnx(K key, V value) {
+	public <V> Boolean setnx(String key, V value) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -148,7 +152,33 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> void set(K key, V value, long timeout, TimeUnit unit) {
+	public <V> Boolean setnx(String key, V value, long timeout, TimeUnit unit) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = this.serializeValue(value);
+
+			if (rawValue != null) {
+				final boolean result = (resource.setnx(rawKey, rawValue) == 1);
+				if (result) {
+					resource.expire(rawKey, (int) unit.toSeconds(timeout));
+				}
+				return result;
+			}
+
+			return Boolean.FALSE;
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:setnx", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <V> void set(String key, V value, long timeout, TimeUnit unit) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -170,7 +200,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 	}
 
-	protected <K, V> Boolean cas0(final K key, final CasOperation<V> casOperation) {
+	protected <K, V> Boolean cas0(final String key, final CasOperation<V> casOperation) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -210,7 +240,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean cas(final K key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
+	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
 		final AtomicBoolean abortStatus = new AtomicBoolean(false);
 		final FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
@@ -246,7 +276,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> void delete(K key) {
+	public void delete(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -262,13 +292,13 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> void delete(Collection<K> keys) {
+	public void delete(Collection<String> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return;
 		}
 		final Jedis resource = this.getResource();
 		try {
-			final byte[][] rawKeys = this.serializeKeys(keys.toArray());
+			final byte[][] rawKeys = this.serializeKeys(keys.toArray(new String[] {}));
 
 			resource.del(rawKeys);
 		}
@@ -281,7 +311,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Boolean expire(K key, long timeout, TimeUnit unit) {
+	public Boolean expire(String key, long timeout, TimeUnit unit) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -299,7 +329,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean sadd(K key, V... values) {
+	public <V> Boolean sadd(String key, V... values) {
 		if (ObjectUtils.hasNull(values)) {
 			throw new IllegalArgumentException("values must not contain null");
 		}
@@ -323,7 +353,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean srem(K key, V... values) {
+	public <V> Boolean srem(String key, V... values) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -343,7 +373,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> smembers(K key) {
+	public <V> Set<V> smembers(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -371,7 +401,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long scard(K key) {
+	public Long scard(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -387,7 +417,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long incr(K key, long delta) {
+	public Long incr(String key, long delta) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -403,7 +433,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long incr(K key, long delta, long timeout, TimeUnit unit) {
+	public Long incr(String key, long delta, long timeout, TimeUnit unit) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -424,7 +454,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long decr(K key, long delta) {
+	public Long decr(String key, long delta) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -440,7 +470,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long decr(K key, long delta, long timeout, TimeUnit unit) {
+	public Long decr(String key, long delta, long timeout, TimeUnit unit) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -461,7 +491,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> lrange(K key, long start, long end) {
+	public <V> List<V> lrange(String key, long start, long end) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -489,7 +519,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long llen(K key) {
+	public Long llen(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -505,7 +535,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Long rpush(K key, V... values) {
+	public <V> Long rpush(String key, V... values) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -523,7 +553,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Long lpush(K key, V... values) {
+	public <V> Long lpush(String key, V... values) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -541,7 +571,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V lpop(K key) {
+	public <V> V lpop(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -559,7 +589,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V rpop(K key) {
+	public <V> V rpop(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -577,7 +607,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V brpop(int timeout, K... keys) {
+	public <V> V brpop(int timeout, String... keys) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
@@ -598,7 +628,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V blpop(int timeout, K... keys) {
+	public <V> V blpop(int timeout, String... keys) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
@@ -684,7 +714,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Map<K, Long> mincr(K... keys) {
+	public Map<String, Long> mincr(String... keys) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
@@ -702,7 +732,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hset(K key, F field, V value) {
+	public <V> void hset(String key, String field, V value) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -722,7 +752,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> V hget(K key, F field) {
+	public <V> V hget(String key, String field) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -742,19 +772,19 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hgetAll(K key) {
+	public <V> Map<String, V> hgetAll(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], byte[]> rawValues = resource.hgetAll(rawKey);
 			if (rawValues == null || rawValues.isEmpty()) {
-				return new HashMap<F, V>();
+				return new HashMap<String, V>();
 			}
 
-			final Map<F, V> results = new HashMap<F, V>();
+			final Map<String, V> results = new HashMap<String, V>();
 			for (Map.Entry<byte[], byte[]> entry : rawValues.entrySet()) {
-				final F field = this.deserializeKey(entry.getKey());
+				final String field = this.deserializeKey(entry.getKey());
 				final V value = this.deserializeValue(entry.getValue());
 
 				results.put(field, value);
@@ -771,7 +801,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Long hincr(K key, F field, long value) {
+	public <V> Long hincr(String key, String field, long value) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -789,7 +819,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hmset(K key, Map<F, V> value) {
+	public <V> void hmset(String key, Map<String, V> value) {
 		if (value == null || value.isEmpty()) {
 			return;
 		}
@@ -798,7 +828,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
-			for (Map.Entry<F, V> entry : value.entrySet()) {
+			for (Map.Entry<String, V> entry : value.entrySet()) {
 				final byte[] rawField = this.serializeKey(entry.getKey());
 				if (rawField == null) {
 					throw new IllegalArgumentException("must not contains null field");
@@ -823,7 +853,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hmget(K key, F... fields) {
+	public <V> Map<String, V> hmget(String key, String... fields) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -843,7 +873,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Map<F, Long> hmincr(K key, F... fields) {
+	public Map<String, Long> hmincr(String key, String... fields) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -863,7 +893,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> void hdel(K key, F... fields) {
+	public void hdel(String key, String... fields) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -881,7 +911,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Boolean hexists(K key, F field) {
+	public Boolean hexists(String key, String field) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -899,7 +929,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> hkeys(K key) {
+	public <V> Set<V> hkeys(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -920,7 +950,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> hvals(K key) {
+	public <V> List<V> hvals(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -941,7 +971,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long hlen(K key) {
+	public Long hlen(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -957,7 +987,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zadd(K key, Map<F, Double> scoreMembers) {
+	public Long zadd(String key, Map<String, Double> scoreMembers) {
 		if (scoreMembers == null || scoreMembers.isEmpty()) {
 			return 0L;
 		}
@@ -966,7 +996,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], Double> rawScoreMembers = new HashMap<byte[], Double>();
-			for (Map.Entry<F, Double> entry : scoreMembers.entrySet()) {
+			for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
 				final byte[] rawField = this.serializeKey(entry.getKey());
 
 				rawScoreMembers.put(rawField, entry.getValue());
@@ -983,7 +1013,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zremrangeByRank(K key, long start, long end) {
+	public Long zremrangeByRank(String key, long start, long end) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -999,17 +1029,17 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Set<F> zrange(K key, long start, long end) {
+	public Set<String> zrange(String key, long start, long end) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Set<byte[]> rawFields = resource.zrange(rawKey, start, end);
 
-			final Set<F> fields = new LinkedHashSet<F>();
+			final Set<String> fields = new LinkedHashSet<String>();
 
 			for (byte[] rawField : rawFields) {
-				final F field = this.deserializeKey(rawField);
+				final String field = this.deserializeKey(rawField);
 
 				fields.add(field);
 			}
@@ -1023,9 +1053,9 @@ public class JedisFacade extends Hessian2JedisFacade {
 			this.returnResource(resource);
 		}
 	}
-	
+
 	@Override
-	public <K> Boolean exists(K key) {
+	public Boolean exists(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -1034,6 +1064,85 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:exists", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public Boolean expireAt(String key, long unixTimeMillis) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			/**
+			 * 如果生存时间设置成功，返回 1 。 当 key 不存在或没办法设置生存时间，返回 0 。
+			 */
+			final Long result = resource.expireAt(rawKey, unixTimeMillis);
+
+			return result != null && result > 0;
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:expireAt", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public Boolean setNoIncr(String key, long delta) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final String result = resource.set(rawKey, SafeEncoder.encode(String.valueOf(delta)));
+
+			return StringUtils.equalsIgnoreCase(result, "ok");
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:set", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public Boolean setNoIncr(String key, long delta, long timeout, TimeUnit unit) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final String result = resource.setex(rawKey, (int) unit.toSeconds(timeout),
+					SafeEncoder.encode(String.valueOf(delta)));
+
+			return StringUtils.equalsIgnoreCase(result, "ok");
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:set", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public Long getNoIncr(String key) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = resource.get(rawKey);
+			if (ArrayUtils.isEmpty(rawValue)) {
+				return null;
+			}
+
+			return Long.valueOf(new String(rawValue, Protocol.CHARSET));
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:get", e);
 		}
 		finally {
 			this.returnResource(resource);

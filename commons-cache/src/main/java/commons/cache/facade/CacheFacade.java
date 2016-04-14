@@ -19,59 +19,77 @@ import commons.cache.operation.CasOperation;
  */
 public interface CacheFacade {
 
-	<K, V> V get(K key);
+	<V> V get(String key);
 
-	<K, V> V getQuietly(K key);
+	<V> V getQuietly(String key);
 
-	<K, V> Map<K, V> mget(K... keys);
+	<V> Map<String, V> mget(String... keys);
 
-	<K, V> Map<K, V> mgetQuietly(K... keys);
+	<V> Map<String, V> mgetQuietly(String... keys);
 
-	<K, V> void set(K key, V value);
+	<V> void set(String key, V value);
 
-	<K, V> void setQuietly(K key, V value);
+	<V> void setQuietly(String key, V value);
 
-	<K, V> void set(K key, V value, long timeout);
+	<V> void set(String key, V value, long timeout);
 
-	<K, V> void setQuietly(K key, V value, long timeout);
+	<V> void setQuietly(String key, V value, long timeout);
 
-	<K, V> void set(K key, V value, long timeout, TimeUnit unit);
+	<V> void set(String key, V value, long timeout, TimeUnit unit);
 
-	<K, V> void setQuietly(K key, V value, long timeout, TimeUnit unit);
+	<V> void setQuietly(String key, V value, long timeout, TimeUnit unit);
 
-	<K> void delete(K key);
+	void delete(String key);
 
-	<K> void deleteQuietly(K key);
-
-	<K> void delete(Collection<K> keys);
-
-	<K> void deleteQuietly(Collection<K> keys);
-
-	<K> Boolean expire(K key, long timeout, TimeUnit unit);
-
-	<K> Boolean expireQuietly(K key, long timeout, TimeUnit unit);
-
-	<K> Long incr(K key, long delta);
-
-	<K> Long incrQuietly(K key, long delta);
-
-	<K> Long incr(K key, long delta, long timeout, TimeUnit unit);
-
-	<K> Long incrQuietly(K key, long delta, long timeout, TimeUnit unit);
+	void deleteQuietly(String key);
 	
-	<K> Long decr(K key, long delta);
+//	void delete(String[] key);
+//
+//	void deleteQuietly(String[] key);
 
-	<K> Long decrQuietly(K key, long delta);
+	void delete(Collection<String> keys);
 
-	<K> Long decr(K key, long delta, long timeout, TimeUnit unit);
+	void deleteQuietly(Collection<String> keys);
 
-	<K> Long decrQuietly(K key, long delta, long timeout, TimeUnit unit);
+	Boolean expire(String key, long timeout, TimeUnit unit);
 
-	<K, V> Boolean cas(K key, CasOperation<V> casOperation);
-
-	<K, V> Boolean cas(K key, CasOperation<V> casOperation, long timeout, TimeUnit unit);
+	Boolean expireQuietly(String key, long timeout, TimeUnit unit);
 	
-	<K> Boolean exists(K key);
+	/**
+	 * <pre>
+	 * 如果生存时间设置成功，返回 true 。
+	 * 当 key 不存在或没办法设置生存时间，返回 false 。
+	 * </pre>
+	 * 
+	 * @param key
+	 * @param unixTimeMillis
+	 * @return
+	 */
+	Boolean expireAt(String key, long unixTimeMillis);
 	
-	<K> Boolean existsQuietly(K key);
+	Boolean expireAtQuietly(String key, long unixTimeMillis);
+
+	Long incr(String key, long delta);
+
+	Long incrQuietly(String key, long delta);
+
+	Long incr(String key, long delta, long timeout, TimeUnit unit);
+
+	Long incrQuietly(String key, long delta, long timeout, TimeUnit unit);
+	
+	Long decr(String key, long delta);
+
+	Long decrQuietly(String key, long delta);
+
+	Long decr(String key, long delta, long timeout, TimeUnit unit);
+
+	Long decrQuietly(String key, long delta, long timeout, TimeUnit unit);
+
+	<V> Boolean cas(String key, CasOperation<V> casOperation);
+
+	<V> Boolean cas(String key, CasOperation<V> casOperation, long timeout, TimeUnit unit);
+	
+	Boolean exists(String key);
+	
+	Boolean existsQuietly(String key);
 }

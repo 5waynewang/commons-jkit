@@ -37,7 +37,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> V getQuietly(K key) {
+	public <V> V getQuietly(String key) {
 		try {
 			return this.get(key);
 		}
@@ -48,7 +48,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Map<K, V> mgetQuietly(K... keys) {
+	public <V> Map<String, V> mgetQuietly(String... keys) {
 		try {
 			return this.mget(keys);
 		}
@@ -59,7 +59,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> V getSetQuietly(K key, V value) {
+	public <V> V getSetQuietly(String key, V value) {
 		try {
 			return this.getSet(key, value);
 		}
@@ -70,7 +70,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> void setQuietly(K key, V value) {
+	public <V> void setQuietly(String key, V value) {
 		try {
 			this.set(key, value);
 		}
@@ -80,17 +80,17 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> void set(K key, V value, long timeout) {
+	public <V> void set(String key, V value, long timeout) {
 		this.set(key, value, timeout, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public <K, V> void setQuietly(K key, V value, long timeout) {
+	public <V> void setQuietly(String key, V value, long timeout) {
 		this.setQuietly(key, value, timeout, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public <K, V> void setQuietly(K key, V value, long timeout, TimeUnit unit) {
+	public <V> void setQuietly(String key, V value, long timeout, TimeUnit unit) {
 		try {
 			this.set(key, value, timeout, unit);
 		}
@@ -100,7 +100,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean setnxQuietly(K key, V value) {
+	public <V> Boolean setnxQuietly(String key, V value) {
 		try {
 			return this.setnx(key, value);
 		}
@@ -111,14 +111,25 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean cas(final K key, final CasOperation<V> casOperation) {
+	public <V> Boolean setnxQuietly(String key, V value, long timeout, TimeUnit unit) {
+		try {
+			return this.setnx(key, value, timeout, unit);
+		}
+		catch (Exception e) {
+			logger.warn("redis:setnx", e);
+			return null;
+		}
+	}
+
+	@Override
+	public <V> Boolean cas(final String key, final CasOperation<V> casOperation) {
 		final int timeout = this.redisConfig.getProtocolTimeoutMillis();
 
 		return cas(key, casOperation, timeout, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public <K> void deleteQuietly(K key) {
+	public void deleteQuietly(String key) {
 		try {
 			this.delete(key);
 		}
@@ -128,7 +139,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> void deleteQuietly(Collection<K> keys) {
+	public void deleteQuietly(Collection<String> keys) {
 		try {
 			this.delete(keys);
 		}
@@ -138,7 +149,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Boolean expireQuietly(K key, long timeout, TimeUnit unit) {
+	public Boolean expireQuietly(String key, long timeout, TimeUnit unit) {
 		try {
 			return this.expire(key, timeout, unit);
 		}
@@ -149,7 +160,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long incrQuietly(K key, long delta) {
+	public Long incrQuietly(String key, long delta) {
 		try {
 			return this.incr(key, delta);
 		}
@@ -160,7 +171,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long incrQuietly(K key, long delta, long timeout, TimeUnit unit) {
+	public Long incrQuietly(String key, long delta, long timeout, TimeUnit unit) {
 		try {
 			return this.incr(key, delta, timeout, unit);
 		}
@@ -171,7 +182,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long decrQuietly(K key, long delta) {
+	public Long decrQuietly(String key, long delta) {
 		try {
 			return this.decr(key, delta);
 		}
@@ -182,7 +193,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long decrQuietly(K key, long delta, long timeout, TimeUnit unit) {
+	public Long decrQuietly(String key, long delta, long timeout, TimeUnit unit) {
 		try {
 			return this.decr(key, delta, timeout, unit);
 		}
@@ -193,7 +204,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> lrangeQuietly(K key, long start, long end) {
+	public <V> List<V> lrangeQuietly(String key, long start, long end) {
 		try {
 			return this.lrange(key, start, end);
 		}
@@ -204,7 +215,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long llenQuietly(K key) {
+	public Long llenQuietly(String key) {
 		try {
 			return this.llen(key);
 		}
@@ -215,7 +226,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Long rpushQuietly(K key, V... values) {
+	public <V> Long rpushQuietly(String key, V... values) {
 		try {
 			return this.rpush(key, values);
 		}
@@ -226,7 +237,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Long lpushQuietly(K key, V... values) {
+	public <V> Long lpushQuietly(String key, V... values) {
 		try {
 			return this.lpush(key, values);
 		}
@@ -237,7 +248,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> V lpopQuietly(K key) {
+	public <V> V lpopQuietly(String key) {
 		try {
 			return this.lpop(key);
 		}
@@ -248,7 +259,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> V rpopQuietly(K key) {
+	public <V> V rpopQuietly(String key) {
 		try {
 			return this.rpop(key);
 		}
@@ -259,7 +270,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean saddQuietly(K key, V... values) {
+	public <V> Boolean saddQuietly(String key, V... values) {
 		try {
 			return this.sadd(key, values);
 		}
@@ -270,7 +281,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean sremQuietly(K key, V... values) {
+	public <V> Boolean sremQuietly(String key, V... values) {
 		try {
 			return this.srem(key, values);
 		}
@@ -281,7 +292,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> smembersQuietly(K key) {
+	public <V> Set<V> smembersQuietly(String key) {
 		try {
 			return this.smembers(key);
 		}
@@ -292,7 +303,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Long scardQuietly(K key) {
+	public Long scardQuietly(String key) {
 		try {
 			return this.scard(key);
 		}
@@ -303,7 +314,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K> Map<K, Long> mincrQuietly(K... keys) {
+	public Map<String, Long> mincrQuietly(String... keys) {
 		try {
 			return this.mincr(keys);
 		}
@@ -314,7 +325,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hsetQuietly(K key, F field, V value) {
+	public <V> void hsetQuietly(String key, String field, V value) {
 		try {
 			this.hset(key, field, value);
 		}
@@ -324,7 +335,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> V hgetQuietly(K key, F field) {
+	public <V> V hgetQuietly(String key, String field) {
 		try {
 			return this.hget(key, field);
 		}
@@ -335,7 +346,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hgetAllQuietly(K key) {
+	public <V> Map<String, V> hgetAllQuietly(String key) {
 		try {
 			return this.hgetAll(key);
 		}
@@ -346,7 +357,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Long hincrQuietly(K key, F field, long value) {
+	public <V> Long hincrQuietly(String key, String field, long value) {
 		try {
 			return this.hincr(key, field, value);
 		}
@@ -357,7 +368,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hmsetQuietly(K key, Map<F, V> value) {
+	public <V> void hmsetQuietly(String key, Map<String, V> value) {
 		try {
 			this.hmset(key, value);
 		}
@@ -367,7 +378,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hmgetQuietly(K key, F... fields) {
+	public <V> Map<String, V> hmgetQuietly(String key, String... fields) {
 		try {
 			return this.hmget(key, fields);
 		}
@@ -378,7 +389,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Map<F, Long> hmincrQuietly(K key, F... fields) {
+	public Map<String, Long> hmincrQuietly(String key, String... fields) {
 		try {
 			return this.hmincr(key, fields);
 		}
@@ -389,7 +400,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> void hdelQuietly(K key, F... fields) {
+	public void hdelQuietly(String key, String... fields) {
 		try {
 			this.hdel(key, fields);
 		}
@@ -399,7 +410,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Boolean hexistsQuietly(K key, F field) {
+	public Boolean hexistsQuietly(String key, String field) {
 		try {
 			return this.hexists(key, field);
 		}
@@ -410,7 +421,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> hkeysQuietly(K key) {
+	public <V> Set<V> hkeysQuietly(String key) {
 		try {
 			return this.hkeys(key);
 		}
@@ -421,7 +432,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> hvalsQuietly(K key) {
+	public <V> List<V> hvalsQuietly(String key) {
 		try {
 			return this.hvals(key);
 		}
@@ -432,7 +443,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Long hlenQuietly(K key) {
+	public Long hlenQuietly(String key) {
 		try {
 			return this.hlen(key);
 		}
@@ -443,7 +454,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zaddQuietly(K key, Map<F, Double> scoreMembers) {
+	public Long zaddQuietly(String key, Map<String, Double> scoreMembers) {
 		try {
 			return this.zadd(key, scoreMembers);
 		}
@@ -454,7 +465,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zremrangeByRankQuietly(K key, long start, long end) {
+	public Long zremrangeByRankQuietly(String key, long start, long end) {
 		try {
 			return this.zremrangeByRank(key, start, end);
 		}
@@ -465,7 +476,7 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public <K, F> Set<F> zrangeQuietly(K key, long start, long end) {
+	public Set<String> zrangeQuietly(String key, long start, long end) {
 		try {
 			return this.zrange(key, start, end);
 		}
@@ -474,14 +485,58 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 			return null;
 		}
 	}
-	
+
 	@Override
-	public <K> Boolean existsQuietly(K key) {
+	public Boolean existsQuietly(String key) {
 		try {
 			return this.exists(key);
 		}
 		catch (Exception e) {
 			logger.warn("redis:exists", e);
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean expireAtQuietly(String key, long unixTimeMillis) {
+		try {
+			return this.expireAt(key, unixTimeMillis);
+		}
+		catch (Exception e) {
+			logger.warn("redis:expireAt", e);
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean setNoIncrQuietly(String key, long delta) {
+		try {
+			return this.setNoIncr(key, delta);
+		}
+		catch (Exception e) {
+			logger.warn("redis:set", e);
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean setNoIncrQuietly(String key, long delta, long timeout, TimeUnit unit) {
+		try {
+			return this.setNoIncr(key, delta, timeout, unit);
+		}
+		catch (Exception e) {
+			logger.warn("redis:set", e);
+			return null;
+		}
+	}
+
+	@Override
+	public Long getNoIncrQuietly(String key) {
+		try {
+			return this.getNoIncr(key);
+		}
+		catch (Exception e) {
+			logger.warn("redis:get", e);
 			return null;
 		}
 	}

@@ -25,12 +25,10 @@ import commons.cache.facade.redis.JedisClusterFacade;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 5:16:08 PM Jul 9, 2015
  */
-//@org.junit.Ignore
+@org.junit.Ignore
 public class JedisClusterFacadeTest {
 
 	JedisClusterFacade testedObject;
-
-	final String profile = "dev";
 
 	@Before
 	public void before() throws Exception {
@@ -38,6 +36,16 @@ public class JedisClusterFacadeTest {
 		redisConfig.setClusters("10.8.100.129:6379 10.8.100.129:6479 10.8.100.129:6579");
 		redisConfig.setSlots("0-5460 5461-10922 10923-16383");
 		this.testedObject = new JedisClusterFacade(redisConfig);
+	}
+
+	@Test
+	public void testIncrGetSet() {
+		final String key = "lucifer_test_incrGetSet";
+		Assert.assertTrue(testedObject.setNoIncr(key, 200));
+		Assert.assertTrue(testedObject.getNoIncr(key) == 200);
+		Assert.assertTrue(testedObject.incr(key, 10) == 210);
+		Assert.assertTrue(testedObject.getNoIncr(key) == 210);
+		testedObject.delete(key);
 	}
 
 	@Test
@@ -59,7 +67,7 @@ public class JedisClusterFacadeTest {
 
 		this.testedObject.sadd(key, "1", null, "2");
 
-		System.out.println(this.testedObject.scard(key)); 
+		System.out.println(this.testedObject.scard(key));
 	}
 
 	@Test

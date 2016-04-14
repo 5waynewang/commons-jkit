@@ -13,15 +13,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import redis.clients.jedis.DefaultSlotMatcher;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.SlotMatcher;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.util.JedisClusterCRC16;
+import redis.clients.util.SafeEncoder;
 
 import com.google.common.collect.Lists;
 import commons.cache.config.RedisConfig;
@@ -47,7 +50,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	private JedisCluster jedisCluster;
 
 	@Override
-	public <K, V> V get(K key) {
+	public <V> V get(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -59,7 +62,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Map<K, V> mget(K... keys) {
+	public <V> Map<String, V> mget(String... keys) {
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
 			if (keys.length == 1) {
@@ -69,17 +72,17 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
 			 */
 			final List<Object[]> slotsList = this.splitKeyBySlot(keys, rawKeys);
-			final Map<K, V> results = new HashMap<K, V>();
+			final Map<String, V> results = new HashMap<String, V>();
 
 			for (Object[] slots : slotsList) {
-				final K[] ks = (K[]) ((List<K>) slots[0]).toArray();
+				final String[] ks = (String[]) ((List<String>) slots[0]).toArray();
 				final byte[][] rks = ((List<byte[]>) slots[1]).toArray(new byte[][] {});
 				final List<byte[]> rvs = this.jedisCluster.mget(rks);
 				if (rvs == null || rvs.isEmpty()) {
 					continue;
 				}
 
-				final Map<K, V> result = this.toGetMap(ks, rvs);
+				final Map<String, V> result = this.toGetMap(ks, rvs);
 				results.putAll(result);
 			}
 
@@ -91,7 +94,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V getSet(K key, V value) {
+	public <V> V getSet(String key, V value) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -105,7 +108,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> void set(K key, V value) {
+	public <V> void set(String key, V value) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -124,7 +127,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> void set(K key, V value, long timeout, TimeUnit unit) {
+	public <V> void set(String key, V value, long timeout, TimeUnit unit) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -143,7 +146,29 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean setnx(K key, V value) {
+	public <V> Boolean setnx(String key, V value, long timeout, TimeUnit unit) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = this.serializeValue(value);
+
+			if (rawValue != null) {
+				final boolean result = (this.jedisCluster.setnx(rawKey, rawValue) == 1);
+				if (result) {
+					this.jedisCluster.expire(rawKey, (int) unit.toSeconds(timeout));
+				}
+				return result;
+			}
+
+			return Boolean.FALSE;
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:setnx", e);
+		}
+	}
+
+	@Override
+	public <V> Boolean setnx(String key, V value) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -161,12 +186,12 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean cas(final K key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
+	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
 		throw new UnsupportedOperationException("Redis Cluster can not support the operation");
 	}
 
 	@Override
-	public <K> void delete(K key) {
+	public void delete(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -178,12 +203,12 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> void delete(Collection<K> keys) {
+	public void delete(Collection<String> keys) {
 		if (keys == null || keys.isEmpty()) {
 			return;
 		}
 		try {
-			final byte[][] rawKeys = this.serializeKeys(keys.toArray());
+			final byte[][] rawKeys = this.serializeKeys(keys.toArray(new String[] {}));
 			if (rawKeys.length == 1) {
 				this.jedisCluster.del(rawKeys);
 				return;
@@ -205,7 +230,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Boolean expire(K key, long timeout, TimeUnit unit) {
+	public Boolean expire(String key, long timeout, TimeUnit unit) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -219,7 +244,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean sadd(K key, V... values) {
+	public <V> Boolean sadd(String key, V... values) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -235,7 +260,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Boolean srem(K key, V... values) {
+	public <V> Boolean srem(String key, V... values) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -251,7 +276,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> smembers(K key) {
+	public <V> Set<V> smembers(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -275,7 +300,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long scard(K key) {
+	public Long scard(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -287,7 +312,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long incr(K key, long delta) {
+	public Long incr(String key, long delta) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -299,7 +324,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long incr(K key, long delta, long timeout, TimeUnit unit) {
+	public Long incr(String key, long delta, long timeout, TimeUnit unit) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -316,7 +341,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long decr(K key, long delta) {
+	public Long decr(String key, long delta) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -328,7 +353,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long decr(K key, long delta, long timeout, TimeUnit unit) {
+	public Long decr(String key, long delta, long timeout, TimeUnit unit) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -345,7 +370,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> lrange(K key, long start, long end) {
+	public <V> List<V> lrange(String key, long start, long end) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -369,7 +394,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Long llen(K key) {
+	public Long llen(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -381,7 +406,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Long rpush(K key, V... values) {
+	public <V> Long rpush(String key, V... values) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -395,7 +420,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Long lpush(K key, V... values) {
+	public <V> Long lpush(String key, V... values) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -409,7 +434,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V lpop(K key) {
+	public <V> V lpop(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -423,7 +448,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V rpop(K key) {
+	public <V> V rpop(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -437,7 +462,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V brpop(int timeout, K... keys) {
+	public <V> V brpop(int timeout, String... keys) {
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
 
@@ -454,7 +479,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> V blpop(int timeout, K... keys) {
+	public <V> V blpop(int timeout, String... keys) {
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
 
@@ -518,7 +543,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K> Map<K, Long> mincr(K... keys) {
+	public Map<String, Long> mincr(String... keys) {
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys);
 			if (keys.length == 1) {
@@ -528,10 +553,10 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
 			 */
 			final List<Object[]> slotsList = this.splitKeyBySlot(keys, rawKeys);
-			final Map<K, Long> results = new HashMap<K, Long>();
+			final Map<String, Long> results = new HashMap<String, Long>();
 
 			for (Object[] slots : slotsList) {
-				final K[] ks = (K[]) ((List<K>) slots[0]).toArray();
+				final String[] ks = (String[]) ((List<String>) slots[0]).toArray();
 				final byte[][] rks = ((List<byte[]>) slots[1]).toArray(new byte[][] {});
 				final List<byte[]> rvs = this.jedisCluster.mget(rks);
 				if (rvs == null || rvs.isEmpty()) {
@@ -575,7 +600,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hset(K key, F field, V value) {
+	public <V> void hset(String key, String field, V value) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -591,7 +616,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> V hget(K key, F field) {
+	public <V> V hget(String key, String field) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -607,18 +632,18 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hgetAll(K key) {
+	public <V> Map<String, V> hgetAll(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], byte[]> rawValues = this.jedisCluster.hgetAll(rawKey);
 			if (rawValues == null || rawValues.isEmpty()) {
-				return new HashMap<F, V>();
+				return new HashMap<String, V>();
 			}
 
-			final Map<F, V> results = new HashMap<F, V>();
+			final Map<String, V> results = new HashMap<String, V>();
 			for (Map.Entry<byte[], byte[]> entry : rawValues.entrySet()) {
-				final F field = this.deserializeKey(entry.getKey());
+				final String field = this.deserializeKey(entry.getKey());
 				final V value = this.deserializeValue(entry.getValue());
 
 				results.put(field, value);
@@ -632,7 +657,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Long hincr(K key, F field, long value) {
+	public <V> Long hincr(String key, String field, long value) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -646,7 +671,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> void hmset(K key, Map<F, V> value) {
+	public <V> void hmset(String key, Map<String, V> value) {
 		if (value == null || value.isEmpty()) {
 			return;
 		}
@@ -654,7 +679,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
-			for (Map.Entry<F, V> entry : value.entrySet()) {
+			for (Map.Entry<String, V> entry : value.entrySet()) {
 				final byte[] rawField = this.serializeKey(entry.getKey());
 				if (rawField == null) {
 					throw new IllegalArgumentException("must not contains null field");
@@ -676,13 +701,13 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F, V> Map<F, V> hmget(K key, F... fields) {
+	public <V> Map<String, V> hmget(String key, String... fields) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final byte[][] rawFields = this.serializeKeys(fields);
 
-			return this.toGetMap(fields, this.jedisCluster.mget(rawFields));
+			return this.toGetMap(fields, this.jedisCluster.hmget(rawKey, rawFields));
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:hmget", e);
@@ -690,7 +715,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Map<F, Long> hmincr(K key, F... fields) {
+	public Map<String, Long> hmincr(String key, String... fields) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -704,7 +729,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> void hdel(K key, F... fields) {
+	public void hdel(String key, String... fields) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -718,7 +743,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Boolean hexists(K key, F field) {
+	public Boolean hexists(String key, String field) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -732,7 +757,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> Set<V> hkeys(K key) {
+	public <V> Set<V> hkeys(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -749,7 +774,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, V> List<V> hvals(K key) {
+	public <V> List<V> hvals(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -766,7 +791,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long hlen(K key) {
+	public Long hlen(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -778,7 +803,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zadd(K key, Map<F, Double> scoreMembers) {
+	public Long zadd(String key, Map<String, Double> scoreMembers) {
 		if (scoreMembers == null || scoreMembers.isEmpty()) {
 			return 0L;
 		}
@@ -786,7 +811,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Map<byte[], Double> rawScoreMembers = new HashMap<byte[], Double>();
-			for (Map.Entry<F, Double> entry : scoreMembers.entrySet()) {
+			for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
 				final byte[] rawField = this.serializeKey(entry.getKey());
 
 				rawScoreMembers.put(rawField, entry.getValue());
@@ -800,7 +825,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Long zremrangeByRank(K key, long start, long end) {
+	public Long zremrangeByRank(String key, long start, long end) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -812,16 +837,16 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <K, F> Set<F> zrange(K key, long start, long end) {
+	public Set<String> zrange(String key, long start, long end) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
 			final Set<byte[]> rawFields = this.jedisCluster.zrange(rawKey, start, end);
 
-			final Set<F> fields = new LinkedHashSet<F>();
+			final Set<String> fields = new LinkedHashSet<String>();
 
 			for (byte[] rawField : rawFields) {
-				final F field = this.deserializeKey(rawField);
+				final String field = this.deserializeKey(rawField);
 
 				fields.add(field);
 			}
@@ -832,9 +857,9 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			throw new CacheException("redis:zremrangeByRank", e);
 		}
 	}
-	
+
 	@Override
-	public <K> Boolean exists(K key) {
+	public Boolean exists(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
@@ -842,6 +867,66 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:exists", e);
+		}
+	}
+
+	@Override
+	public Boolean expireAt(String key, long unixTimeMillis) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final Long result = this.jedisCluster.expireAt(rawKey, unixTimeMillis);
+
+			return result != null && result > 0;
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:expireAt", e);
+		}
+	}
+
+	@Override
+	public Boolean setNoIncr(String key, long delta) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final String result = this.jedisCluster.set(rawKey, SafeEncoder.encode(String.valueOf(delta)));
+
+			return StringUtils.equalsIgnoreCase(result, "ok");
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:set", e);
+		}
+	}
+
+	@Override
+	public Boolean setNoIncr(String key, long delta, long timeout, TimeUnit unit) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final String result = this.jedisCluster.setex(rawKey, (int) unit.toSeconds(timeout),
+					SafeEncoder.encode(String.valueOf(delta)));
+
+			return StringUtils.equalsIgnoreCase(result, "ok");
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:set", e);
+		}
+	}
+
+	@Override
+	public Long getNoIncr(String key) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = this.jedisCluster.get(rawKey);
+			if (ArrayUtils.isEmpty(rawValue)) {
+				return null;
+			}
+
+			return Long.valueOf(new String(rawValue, Protocol.CHARSET));
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:get", e);
 		}
 	}
 }

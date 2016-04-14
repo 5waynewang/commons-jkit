@@ -6,6 +6,7 @@ package commons.cache.facade;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <pre>
@@ -16,37 +17,64 @@ import java.util.Set;
  * @since 5:13:53 PM Nov 14, 2015
  */
 public interface RedisFacade extends CacheFacade {
-	<K, V> Boolean setnx(K key, V value);
 
-	<K, V> Boolean setnxQuietly(K key, V value);
+	/**
+	 * {@link #setnx(String, Object, long, TimeUnit)}
+	 */
+	<V> Boolean setnx(String key, V value);
 
-	<K, V> V getSet(K key, V value);
+	/**
+	 * <pre>
+	 * SETNX 是『SET if Not eXists』(如果不存在，则 SET)的简写。
+	 * 设置成功，返回 1 。
+	 * 设置失败，返回 0 。
+	 * </pre>
+	 * 
+	 * @param key
+	 * @param value
+	 * @param timeout
+	 * @param unit
+	 * @return
+	 */
+	<V> Boolean setnx(String key, V value, long timeout, TimeUnit unit);
 
-	<K, V> V getSetQuietly(K key, V value);
+	/**
+	 * {@link #setnx(String, Object, long, TimeUnit)}
+	 */
+	<V> Boolean setnxQuietly(String key, V value);
 
-	<K, V> List<V> lrange(K key, long start, long end);
+	/**
+	 * {@link #setnx(String, Object, long, TimeUnit)}
+	 */
+	<V> Boolean setnxQuietly(String key, V value, long timeout, TimeUnit unit);
 
-	<K, V> List<V> lrangeQuietly(K key, long start, long end);
+	<V> V getSet(String key, V value);
 
-	<K> Long llen(K key);
+	<V> V getSetQuietly(String key, V value);
 
-	<K> Long llenQuietly(K key);
+	<V> List<V> lrange(String key, long start, long end);
 
-	<K, V> Long rpush(K key, V... value);
+	<V> List<V> lrangeQuietly(String key, long start, long end);
 
-	<K, V> Long rpushQuietly(K key, V... value);
+	Long llen(String key);
 
-	<K, V> Long lpush(K key, V... value);
+	Long llenQuietly(String key);
 
-	<K, V> Long lpushQuietly(K key, V... value);
+	<V> Long rpush(String key, V... value);
 
-	<K, V> V lpop(K key);
+	<V> Long rpushQuietly(String key, V... value);
 
-	<K, V> V lpopQuietly(K key);
+	<V> Long lpush(String key, V... value);
 
-	<K, V> V rpop(K key);
+	<V> Long lpushQuietly(String key, V... value);
 
-	<K, V> V rpopQuietly(K key);
+	<V> V lpop(String key);
+
+	<V> V lpopQuietly(String key);
+
+	<V> V rpop(String key);
+
+	<V> V rpopQuietly(String key);
 
 	/**
 	 * timeout=0 阻塞等待
@@ -55,87 +83,99 @@ public interface RedisFacade extends CacheFacade {
 	 * @param keys
 	 * @return
 	 */
-	<K, V> V brpop(int timeout, K... keys);
+	<V> V brpop(int timeout, String... keys);
 
-	<K, V> V blpop(int timeout, K... keys);
+	<V> V blpop(int timeout, String... keys);
 
-	<K, V> Boolean sadd(K key, V... value);
+	<V> Boolean sadd(String key, V... value);
 
-	<K, V> Boolean saddQuietly(K key, V... value);
+	<V> Boolean saddQuietly(String key, V... value);
 
-	<K, V> Boolean srem(K key, V... value);
+	<V> Boolean srem(String key, V... value);
 
-	<K, V> Boolean sremQuietly(K key, V... value);
+	<V> Boolean sremQuietly(String key, V... value);
 
-	<K, V> Set<V> smembers(K key);
+	<V> Set<V> smembers(String key);
 
-	<K, V> Set<V> smembersQuietly(K key);
+	<V> Set<V> smembersQuietly(String key);
 
-	<K> Long scard(K key);
+	Long scard(String key);
 
-	<K> Long scardQuietly(K key);
+	Long scardQuietly(String key);
 
-	<K> Map<K, Long> mincr(K... keys);
+	Map<String, Long> mincr(String... keys);
 
-	<K> Map<K, Long> mincrQuietly(K... keys);
+	Map<String, Long> mincrQuietly(String... keys);
 
-	<K, F, V> void hset(K key, F field, V value);
+	<V> void hset(String key, String field, V value);
 
-	<K, F, V> void hsetQuietly(K key, F field, V value);
+	<V> void hsetQuietly(String key, String field, V value);
 
-	<K, F, V> void hmset(K key, Map<F, V> value);
+	<V> void hmset(String key, Map<String, V> value);
 
-	<K, F, V> void hmsetQuietly(K key, Map<F, V> value);
+	<V> void hmsetQuietly(String key, Map<String, V> value);
 
-	<K, F, V> V hget(K key, F field);
+	<V> V hget(String key, String field);
 
-	<K, F, V> V hgetQuietly(K key, F field);
+	<V> V hgetQuietly(String key, String field);
 
-	<K, F, V> Map<F, V> hgetAll(K key);
+	<V> Map<String, V> hgetAll(String key);
 
-	<K, F, V> Map<F, V> hgetAllQuietly(K key);
+	<V> Map<String, V> hgetAllQuietly(String key);
 
-	<K, F, V> Long hincr(K key, F field, long value);
+	<V> Long hincr(String key, String field, long value);
 
-	<K, F, V> Long hincrQuietly(K key, F field, long value);
+	<V> Long hincrQuietly(String key, String field, long value);
 
-	<K, F, V> Map<F, V> hmget(K key, F... fields);
+	<V> Map<String, V> hmget(String key, String... fields);
 
-	<K, F, V> Map<F, V> hmgetQuietly(K key, F... fields);
+	<V> Map<String, V> hmgetQuietly(String key, String... fields);
 
-	<K, F> Map<F, Long> hmincr(K key, F... fields);
+	Map<String, Long> hmincr(String key, String... fields);
 
-	<K, F> Map<F, Long> hmincrQuietly(K key, F... fields);
+	Map<String, Long> hmincrQuietly(String key, String... fields);
 
-	<K, F> void hdel(K key, F... fields);
+	void hdel(String key, String... fields);
 
-	<K, F> void hdelQuietly(K key, F... fields);
+	void hdelQuietly(String key, String... fields);
 
-	<K, F> Boolean hexists(K key, F field);
+	Boolean hexists(String key, String field);
 
-	<K, F> Boolean hexistsQuietly(K key, F field);
+	Boolean hexistsQuietly(String key, String field);
 
-	<K, V> Set<V> hkeys(K key);
+	<V> Set<V> hkeys(String key);
 
-	<K, V> Set<V> hkeysQuietly(K key);
+	<V> Set<V> hkeysQuietly(String key);
 
-	<K, V> List<V> hvals(K key);
+	<V> List<V> hvals(String key);
 
-	<K, V> List<V> hvalsQuietly(K key);
+	<V> List<V> hvalsQuietly(String key);
 
-	<K, F> Long hlen(K key);
+	Long hlen(String key);
 
-	<K, F> Long hlenQuietly(K key);
+	Long hlenQuietly(String key);
 
-	<K, F> Long zadd(K key, Map<F, Double> scoreMembers);
+	Long zadd(String key, Map<String, Double> scoreMembers);
 
-	<K, F> Long zaddQuietly(K key, Map<F, Double> scoreMembers);
+	Long zaddQuietly(String key, Map<String, Double> scoreMembers);
 
-	<K, F> Long zremrangeByRank(K key, long start, long end);
+	Long zremrangeByRank(String key, long start, long end);
 
-	<K, F> Long zremrangeByRankQuietly(K key, long start, long end);
+	Long zremrangeByRankQuietly(String key, long start, long end);
 
-	<K, F> Set<F> zrange(K key, long start, long end);
+	Set<String> zrange(String key, long start, long end);
 
-	<K, F> Set<F> zrangeQuietly(K key, long start, long end);
+	Set<String> zrangeQuietly(String key, long start, long end);
+
+	Boolean setNoIncr(String key, long delta);
+
+	Boolean setNoIncrQuietly(String key, long delta);
+
+	Boolean setNoIncr(String key, long delta, long timeout, TimeUnit unit);
+
+	Boolean setNoIncrQuietly(String key, long delta, long timeout, TimeUnit unit);
+
+	Long getNoIncr(String key);
+
+	Long getNoIncrQuietly(String key);
 }
