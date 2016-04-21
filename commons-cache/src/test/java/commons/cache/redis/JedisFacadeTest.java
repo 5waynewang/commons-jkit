@@ -288,4 +288,18 @@ public class JedisFacadeTest {
 			Assert.assertEquals(entry.getValue().longValue(), results1.get(entry.getKey()).longValue());
 		}
 	}
+
+	@Test
+	public void testLindex() {
+		final String key = "lucifer_test_lindex";
+		System.out.println(testedObject.lindex(key, 1));
+
+		testedObject.lpush(key, 1, 2);
+
+		System.out.println(testedObject.lindex(key, 0));
+		System.out.println(testedObject.lindex(key, 1));
+		System.out.println(testedObject.lindex(key, 2));
+
+		testedObject.delete(key);
+	}
 }

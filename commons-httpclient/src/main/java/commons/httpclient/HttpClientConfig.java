@@ -29,8 +29,8 @@ public interface HttpClientConfig {
 	
 	int VALIDATE_AFTER_INACTIVITY = Integer.parseInt(System.getProperty("http.validateAfterInactivity.ms", "300000"));
 
-	int HTTP_MAX_TOTAL_CONN = Integer.parseInt(System.getProperty("http.max.total.conn", "50"));
+	int HTTP_MAX_TOTAL_CONN = Integer.parseInt(System.getProperty("http.max.total.conn", "100"));
 
-	int HTTP_MAX_CONN_PER_ROUTE = Integer.parseInt(System.getProperty("http.max.conn.per.route", "5"));
+	int HTTP_MAX_CONN_PER_ROUTE = Integer.parseInt(System.getProperty("http.max.conn.per.route", "10"));
 
 }

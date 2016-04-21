@@ -215,6 +215,17 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
+	public <V> V lindexQuietly(String key, int index) {
+		try {
+			return this.lindex(key, index);
+		}
+		catch (Exception e) {
+			logger.warn("redis:lindex", e);
+			return null;
+		}
+	}
+
+	@Override
 	public Long llenQuietly(String key) {
 		try {
 			return this.llen(key);

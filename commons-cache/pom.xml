@@ -40,6 +40,10 @@
 			<version>99-empty</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 		<!-- log4j -->
 		<dependency>
 			<groupId>log4j</groupId>
@@ -89,6 +93,12 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
+		</dependency>
+		<!-- alibaba -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

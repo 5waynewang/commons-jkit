@@ -17,6 +17,11 @@ import commons.lang.UrlUtils;
  * @since 5:04:49 PM Dec 11, 2013
  */
 public class UrlUtilsTests {
+	
+	@Test
+	public void testExtractParam() {
+		Assert.assertEquals(UrlUtils.extractParam("https://item.taobao.com/item.htm?spm=a219r.lm874.14.1.1s9AQE&id=528585549538&ns=1&abbucket=6#detail", "id"), "528585549538");
+	}
 
 	@Test
 	public void testGetStringParams2() {

@@ -25,9 +25,15 @@ import org.junit.Test;
  * @since 7:50:26 PM Mar 10, 2015
  */
 public class PoolingHttpClientsTest {
-	
 	@Test
 	public void testCustomHeader() {
+		HttpInvokeResult result = PoolingHttpClients.get("http://config.ixiaopu.com:54321/config.co?dataId=GLOBAL&group=XIANGQU");
+		
+		System.out.println(result.getHeader("Content-MD5"));
+	}
+	
+	@Test
+	public void testCustomHeader2() {
 		final String proxy = "10.166.0.54:18888";
 		
 		HttpInvokeResult result = PoolingHttpClients.proxyGet("http://config.ixiaopu.com:54321/config.co?dataId=GLOBAL&group=XIANGQU", proxy);

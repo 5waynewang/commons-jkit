@@ -7,9 +7,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -342,5 +345,44 @@ public class UrlUtils {
 		}
 
 		return result;
+	}
+	
+	/**
+	 * <pre>
+	 * 抽取url中的参数
+	 * UrlUtils.extractParams(null, "id") = []
+	 * UrlUtils.extractParams("", "id") = []
+	 * UrlUtils.extractParams("http://xx.com/item.htm?id=1", null) = []
+	 * UrlUtils.extractParams("http://xx.com/item.htm?id=1", "") = []
+	 * UrlUtils.extractParams("http://xx.com/item.htm?id=1", "id") = ["1"]
+	 * UrlUtils.extractParams("http://xx.com/item.htm?id=1&id=2", "id") = ["1", "2"]
+	 * </pre>
+	 * 
+	 * @param url
+	 * @param paramName
+	 * @return
+	 */
+	public static List<String> extractParams(String url, String paramName) {
+		if (StringUtils.isBlank(url) || StringUtils.isBlank(paramName)) {
+			return Collections.emptyList();
+		}
+		final Matcher matcher = Pattern.compile("[\\?|&]{1,1}" + paramName + "=(\\d+)").matcher(url);
+		final List<String> params = new ArrayList<String>();
+		while (matcher.find()) {
+			final int start = matcher.start() + paramName.length() + 1 + 1;
+			final int end = matcher.end();
+
+			params.add(url.substring(start, end));
+		}
+		return params;
+	}
+
+	/**
+	 * @see {@link #extractParams(String, String)}
+	 */
+	public static String extractParam(String url, String paramName) {
+		final List<String> params = extractParams(url, paramName);
+
+		return params.isEmpty() ? null : params.get(0);
 	}
 }

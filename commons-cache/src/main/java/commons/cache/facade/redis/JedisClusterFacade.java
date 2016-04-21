@@ -3,6 +3,7 @@
  */
 package commons.cache.facade.redis;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import redis.clients.jedis.DefaultSlotMatcher;
 import redis.clients.jedis.HostAndPort;
@@ -27,6 +29,7 @@ import redis.clients.util.JedisClusterCRC16;
 import redis.clients.util.SafeEncoder;
 
 import com.google.common.collect.Lists;
+
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
@@ -71,12 +74,12 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			/**
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
 			 */
-			final List<Object[]> slotsList = this.splitKeyBySlot(keys, rawKeys);
+			final List<Pair<List<String>, List<byte[]>>> slotsList = this.splitKeyBySlot(keys, rawKeys);
 			final Map<String, V> results = new HashMap<String, V>();
 
-			for (Object[] slots : slotsList) {
-				final String[] ks = (String[]) ((List<String>) slots[0]).toArray();
-				final byte[][] rks = ((List<byte[]>) slots[1]).toArray(new byte[][] {});
+			for (Pair<List<String>, List<byte[]>> slots : slotsList) {
+				final String[] ks = slots.getLeft().toArray(new String[] {});
+				final byte[][] rks = slots.getRight().toArray(new byte[][] {});
 				final List<byte[]> rvs = this.jedisCluster.mget(rks);
 				if (rvs == null || rvs.isEmpty()) {
 					continue;
@@ -216,10 +219,11 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			/**
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
 			 */
-			final List<Object[]> slotsList = this.splitKeyBySlot(keys.toArray(), rawKeys);
+			final List<Pair<List<String>, List<byte[]>>> slotsList = this.splitKeyBySlot(keys.toArray(new String[] {}),
+					rawKeys);
 
-			for (Object[] slots : slotsList) {
-				final byte[][] rks = ((List<byte[]>) slots[1]).toArray(new byte[][] {});
+			for (Pair<List<String>, List<byte[]>> slots : slotsList) {
+				final byte[][] rks = slots.getRight().toArray(new byte[][] {});
 
 				this.jedisCluster.del(rks);
 			}
@@ -394,6 +398,20 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
+	public <V> V lindex(String key, int index) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = this.jedisCluster.lindex(rawKey, index);
+
+			return deserializeValue(rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:lindex", e);
+		}
+	}
+
+	@Override
 	public Long llen(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -497,6 +515,14 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 
 	@Override
 	public void destroy() {
+		if (this.jedisCluster != null) {
+			try {
+				this.jedisCluster.close();
+			}
+			catch (IOException e) {
+				logger.warn("Error to close jedisCluster", e);
+			}
+		}
 	}
 
 	void init() {
@@ -552,12 +578,12 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			/**
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
 			 */
-			final List<Object[]> slotsList = this.splitKeyBySlot(keys, rawKeys);
+			final List<Pair<List<String>, List<byte[]>>> slotsList = this.splitKeyBySlot(keys, rawKeys);
 			final Map<String, Long> results = new HashMap<String, Long>();
 
-			for (Object[] slots : slotsList) {
-				final String[] ks = (String[]) ((List<String>) slots[0]).toArray();
-				final byte[][] rks = ((List<byte[]>) slots[1]).toArray(new byte[][] {});
+			for (Pair<List<String>, List<byte[]>> slots : slotsList) {
+				final String[] ks = slots.getLeft().toArray(new String[] {});
+				final byte[][] rks = slots.getRight().toArray(new byte[][] {});
 				final List<byte[]> rvs = this.jedisCluster.mget(rks);
 				if (rvs == null || rvs.isEmpty()) {
 					continue;
@@ -573,9 +599,11 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 	}
 
-	<K> List<Object[]> splitKeyBySlot(K[] keys, byte[][] rawKeys) {
-		final Map<byte[], Object[]> slotsTable = new HashMap<byte[], Object[]>();
-		slotsTable.put(rawKeys[0], new Object[] { Lists.newArrayList(keys[0]), Lists.newArrayList(rawKeys[0]) });
+	List<Pair<List<String>, List<byte[]>>> splitKeyBySlot(String[] keys, byte[][] rawKeys) {
+		final Map<byte[], Pair<List<String>, List<byte[]>>> slotsTable = new HashMap<byte[], Pair<List<String>, List<byte[]>>>();
+		final List<String> left0 = Lists.newArrayList(keys[0]);
+		final List<byte[]> right0 = Lists.newArrayList(rawKeys[0]);
+		slotsTable.put(rawKeys[0], Pair.of(left0, right0));
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("key: {}, slot: {}", keys[0], JedisClusterCRC16.getSlot(rawKeys[0]));
@@ -586,17 +614,19 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 				logger.debug("key: {}, slot: {}", keys[i], JedisClusterCRC16.getSlot(rawKeys[i]));
 			}
 
-			for (Map.Entry<byte[], Object[]> entry : slotsTable.entrySet()) {
+			for (Map.Entry<byte[], Pair<List<String>, List<byte[]>>> entry : slotsTable.entrySet()) {
 				if (this.slotMatcher.match(entry.getKey(), rawKeys[i])) {
-					((List<K>) entry.getValue()[0]).add(keys[i]);
-					((List<byte[]>) entry.getValue()[1]).add(rawKeys[i]);
+					entry.getValue().getLeft().add(keys[i]);
+					entry.getValue().getRight().add(rawKeys[i]);
 					continue out;
 				}
 			}
-			slotsTable.put(rawKeys[i], new Object[] { Lists.newArrayList(keys[i]), Lists.newArrayList(rawKeys[i]) });
+			final List<String> left = Lists.newArrayList(keys[i]);
+			final List<byte[]> right = Lists.newArrayList(rawKeys[i]);
+			slotsTable.put(rawKeys[i], Pair.of(left, right));
 		}
 
-		return new ArrayList<Object[]>(slotsTable.values());
+		return new ArrayList<Pair<List<String>, List<byte[]>>>(slotsTable.values());
 	}
 
 	@Override

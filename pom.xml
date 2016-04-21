@@ -50,6 +50,11 @@
 				<artifactId>commons-cache</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>commons-eventbus</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<!-- httpcomponents -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -234,6 +239,7 @@
 						<descriptor>commons-validation/release.xml</descriptor>
 						<descriptor>commons-serialization/release.xml</descriptor>
 						<descriptor>commons-cache/release.xml</descriptor>
+						<descriptor>commons-eventbus/release.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>
@@ -285,5 +291,6 @@
 		<module>commons-validation</module>
 		<module>commons-serialization</module>
 		<module>commons-cache</module>
+		<module>commons-eventbus</module>
 	</modules>
 </project>

@@ -519,6 +519,24 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
+	public <V> V lindex(String key, int index) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[] rawValue = resource.lindex(rawKey, index);
+
+			return deserializeValue(rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:lindex", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
 	public Long llen(String key) {
 		final Jedis resource = this.getResource();
 		try {
