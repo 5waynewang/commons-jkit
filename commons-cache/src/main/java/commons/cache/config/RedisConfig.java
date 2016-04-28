@@ -23,10 +23,8 @@ public class RedisConfig implements Serializable {
 
 	// redis clusters 地址 逗号或空格分隔
 	private String clusters;
-	// slot 规则 逗号或空格分隔，例如：0-5460 5461-10922 10923-16383
-	private String slots;
 	private int connectionTimeout = 20000;
-	private int soTimeout = 20000;
+	private int soTimeout = 5000;
 	private int maxRedirections = 3;
 
 	// 连接池最大连接数
@@ -166,14 +164,6 @@ public class RedisConfig implements Serializable {
 
 	public void setMaxRedirections(int maxRedirections) {
 		this.maxRedirections = maxRedirections;
-	}
-
-	public String getSlots() {
-		return slots;
-	}
-
-	public void setSlots(String slots) {
-		this.slots = slots;
 	}
 
 }

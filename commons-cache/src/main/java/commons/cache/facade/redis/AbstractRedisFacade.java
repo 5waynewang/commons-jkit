@@ -33,9 +33,6 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 		this.redisConfig = redisConfig;
 	}
 
-	public void destroy() {
-	}
-
 	@Override
 	public <V> V getQuietly(String key) {
 		try {

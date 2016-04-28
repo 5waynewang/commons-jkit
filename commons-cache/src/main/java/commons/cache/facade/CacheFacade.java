@@ -92,4 +92,6 @@ public interface CacheFacade {
 	Boolean exists(String key);
 	
 	Boolean existsQuietly(String key);
+	
+	void destroy();
 }

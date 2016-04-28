@@ -18,25 +18,21 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import redis.clients.jedis.DefaultSlotMatcher;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.SlotMatcher;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.util.JedisClusterCRC16;
-import redis.clients.util.SafeEncoder;
-
 import com.google.common.collect.Lists;
 
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.util.JedisClusterCRC16;
+import redis.clients.util.SafeEncoder;
 
 /**
  * <pre>
- *
  * </pre>
  * 
  * @author Wayne.Wang<5waynewang@gmail.com>
@@ -49,7 +45,6 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	private JedisPoolConfig poolConfig;
-	private SlotMatcher slotMatcher;
 	private JedisCluster jedisCluster;
 
 	@Override
@@ -189,7 +184,8 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
+	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout,
+			final TimeUnit unit) {
 		throw new UnsupportedOperationException("Redis Cluster can not support the operation");
 	}
 
@@ -558,13 +554,9 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			nodes.add(new HostAndPort(arr[0], Integer.parseInt(arr[1])));
 		}
 
-		final String slots = this.redisConfig.getSlots();
-		// TODO 通过 jedis.clusterNodes() 获取，参考 JedisClusterInfoCache
-		this.slotMatcher = new DefaultSlotMatcher(slots);
-
 		this.jedisCluster = new JedisCluster(nodes, connectionTimeout, soTimeout, maxRedirections, this.poolConfig);
 		if (logger.isInfoEnabled()) {
-			logger.info("connect to Redis Cluster {}, slots: {}", clusters, slots);
+			logger.info("connect to Redis Cluster {}", clusters);
 		}
 	}
 
@@ -615,7 +607,7 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			}
 
 			for (Map.Entry<byte[], Pair<List<String>, List<byte[]>>> entry : slotsTable.entrySet()) {
-				if (this.slotMatcher.match(entry.getKey(), rawKeys[i])) {
+				if (match(entry.getKey(), rawKeys[i])) {
 					entry.getValue().getLeft().add(keys[i]);
 					entry.getValue().getRight().add(rawKeys[i]);
 					continue out;
@@ -627,6 +619,20 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 
 		return new ArrayList<Pair<List<String>, List<byte[]>>>(slotsTable.values());
+	}
+
+	boolean match(byte[]... keys) {
+		final int keyCount = keys.length;
+		if (keyCount > 1) {
+			int slot = JedisClusterCRC16.getSlot(keys[0]);
+			for (int i = 1; i < keyCount; i++) {
+				int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
+				if (slot != nextSlot) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	@Override

@@ -34,7 +34,6 @@ public class JedisClusterFacadeTest {
 	public void before() throws Exception {
 		final RedisConfig redisConfig = new RedisConfig();
 		redisConfig.setClusters("10.8.100.129:6379 10.8.100.129:6479 10.8.100.129:6579");
-		redisConfig.setSlots("0-5460 5461-10922 10923-16383");
 		this.testedObject = new JedisClusterFacade(redisConfig);
 	}
 
