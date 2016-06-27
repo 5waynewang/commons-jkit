@@ -55,6 +55,11 @@
 				<artifactId>commons-eventbus</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>commons-textfilter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<!-- httpcomponents -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -292,5 +297,6 @@
 		<module>commons-serialization</module>
 		<module>commons-cache</module>
 		<module>commons-eventbus</module>
+		<module>commons-textfilter</module>
 	</modules>
 </project>

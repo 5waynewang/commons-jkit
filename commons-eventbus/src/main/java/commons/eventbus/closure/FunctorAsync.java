@@ -28,6 +28,7 @@ public class FunctorAsync implements ClosureExt {
 		return null != impl ? impl.toString() : "functorAsync(null)";
 	}
 
+	@Override
 	public void execute(final Object... args) {
 		executor.execute(new Runnable() {
 
@@ -58,6 +59,7 @@ public class FunctorAsync implements ClosureExt {
 		this.impl = impl;
 	}
 
+	@Override
 	public void setCanceled(boolean canceled) {
 		this.impl.setCanceled(canceled);
 	}

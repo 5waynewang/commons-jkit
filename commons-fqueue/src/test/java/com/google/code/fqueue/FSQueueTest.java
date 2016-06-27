@@ -29,12 +29,17 @@ public class FSQueueTest extends TestCase {
     private static FQueue queue;
     static {
         try {
-            queue = new FQueue("C:\\Users\\lucifer\\Downloads\\db", 1024);
+            queue = new FQueue("C:\\Users\\lucifer\\Desktop\\FQueue", 1024 * 1024 * 100);
 //            queue.clear();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+    
+    public void testSize() {
+      System.out.println(queue.add("test".getBytes()));
+      System.out.println(new String(queue.poll()));
     }
 
     @Override

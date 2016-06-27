@@ -29,6 +29,7 @@ public class DateUtils {
 
 	public static final String yyyy$MM$dd = "yyyy-MM-dd";
 	public static final String yyyy$MM$dd$HH$mm$ss = "yyyy-MM-dd HH:mm:ss";
+	public static final String yyyy$MM$dd$HH$mm$ss$SSS = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String yyyy$MM$ddTHH$mm$ss = "yyyy-MM-dd'T'HH:mm:ss";
 
 	/**
@@ -58,6 +59,10 @@ public class DateUtils {
 			return parseDate(date, yyyyMMddHHmmss);
 		case 19:
 			return parseDate(date, yyyy$MM$dd$HH$mm$ss, yyyy$MM$ddTHH$mm$ss);
+		case 21:
+		case 22:
+		case 23:
+			return parseDate(date, yyyy$MM$dd$HH$mm$ss$SSS);
 		default:
 			LOG.error("can not get the Date:" + date + "'s pattern");
 			return null;

@@ -49,6 +49,7 @@ public class Functor implements ClosureExt {
 		}
 	}
 
+	@Override
 	public void execute(Object... args) {
 		if (!canceled) {
 			try {
@@ -70,6 +71,7 @@ public class Functor implements ClosureExt {
 		return canceled;
 	}
 
+	@Override
 	public void setCanceled(boolean canceled) {
 		this.canceled = canceled;
 	}
