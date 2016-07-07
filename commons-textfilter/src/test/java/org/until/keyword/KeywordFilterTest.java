@@ -31,7 +31,7 @@ public class KeywordFilterTest {
 
 	@Test
 	public void testFilterText() {
-		final String text = "杭州招鸭 &   子请到西湖";
+		final String text = "计算机等级証 &   子请到西湖";
 		
 		System.out.println(keywordFilter.filterText(text));
 		System.out.println(keywordFilter.containKeyword(text));

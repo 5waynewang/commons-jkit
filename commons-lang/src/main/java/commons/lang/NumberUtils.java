@@ -3,6 +3,9 @@
  */
 package commons.lang;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -31,6 +34,7 @@ public class NumberUtils {
 	 * NumberUtils.eq(0, null)  = false
 	 * NumberUtils.eq(555, 555) = true
 	 * NumberUtils.eq(555, 666) = false
+	 * NumberUtils.eq(555.0, 555) = true
 	 * </pre>
 	 * 
 	 * @param n1
@@ -38,7 +42,7 @@ public class NumberUtils {
 	 * @return
 	 */
 	public static boolean eq(Number n1, Number n2) {
-		return n1 == n2 || (n1 != null && n1.doubleValue() == n2.doubleValue());
+		return n1 == n2 || (n1 != null && Double.doubleToLongBits(n1.doubleValue()) == Double.doubleToLongBits(n2.doubleValue()));
 	}
 
 	/**
@@ -317,27 +321,7 @@ public class NumberUtils {
 	 * @return
 	 */
 	public static double truncate(double num, int offset) {
-		String numStr = String.valueOf(num);
-		String[] numStrs = numStr.split("\\.");
-		if (offset == 0) {
-			return Double.parseDouble(numStrs[0]);
-		} else if (offset > 0) {
-			if (numStrs.length == 1) {
-				return Double.parseDouble(numStrs[0]);
-			} else {
-				if (numStrs[1].length() <= offset) {
-					return num;
-				} else {
-					return Double.parseDouble(numStrs[0] + "." + numStrs[1].substring(0, offset));
-				}
-			}
-		} else {
-			if ((numStrs[0].length() - (num >= 0 ? 0 : 1)) <= Math.abs(offset)) {
-				return 0;
-			} else {
-				return Double.parseDouble(numStrs[0].substring(0, numStrs[0].length() - Math.abs(offset)));
-			}
-		}
+		return BigDecimal.valueOf(num).setScale(offset, RoundingMode.DOWN).doubleValue();
 	}
 
 	/**
@@ -360,35 +344,7 @@ public class NumberUtils {
 	 * @return
 	 */
 	public static double round(double num, int offset) {
-		if (offset == 0) {
-			return Math.round(num);
-		}
-		final String numStr = String.valueOf(num);
-		final String[] numStrs = numStr.split("\\.");
-		if (offset > 0) {
-			if (numStrs.length == 1) {
-				return Double.parseDouble(numStrs[0]);
-			} else {
-				if (numStrs[1].length() <= offset) {
-					return num;
-				} else {
-					return Double.parseDouble(numStrs[0] + "." + numStrs[1].substring(0, offset))
-							+ (numStrs[1].charAt(offset) >= 53 ? (1 / Math.pow(10, offset)) : 0);
-				}
-			}
-		} else {
-			if (numStrs[0].length() + (num >= 0 ? 0 : 1) < Math.abs(offset) + 1) {
-				return 0;
-			}
-
-			int index = numStrs[0].length() + offset;
-			if (index <= 0 || index >= numStrs[0].length()) {
-				return 0;
-			}
-
-			return (Double.parseDouble(numStrs[0].substring(0, index)) + (numStrs[0].charAt(index) >= 53 ? 1 : 0))
-					* Math.pow(10, Math.abs(offset));
-		}
+		return BigDecimal.valueOf(num).setScale(offset, RoundingMode.HALF_UP).doubleValue();
 	}
 
 	/**

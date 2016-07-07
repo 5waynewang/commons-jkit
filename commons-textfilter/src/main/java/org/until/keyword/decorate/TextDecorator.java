@@ -31,7 +31,7 @@ public class TextDecorator {
 			"********", "*********", "**********" };
 
 	public TextDecorator() {
-		this.needT2S = false;
+		this.needT2S = true;
 		this.needDBC = true;
 		this.ignoreCase = true;
 		this.filterNoneHanLetter = false;

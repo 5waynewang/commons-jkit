@@ -3,6 +3,8 @@
  */
 package commons.lang;
 
+import java.util.Objects;
+
 /**
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 10:24:47 AM Nov 25, 2013
@@ -39,6 +41,6 @@ public class ObjectUtils {
 	 * @return
 	 */
 	public static String toStringIfNotNull(Object obj) {
-		return obj == null ? null : obj.toString();
+		return Objects.toString(obj, null);
 	}
 }
