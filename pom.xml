@@ -185,6 +185,12 @@
 				<artifactId>xstream</artifactId>
 				<version>1.4.8</version>
 			</dependency>
+			<!-- org.springframework.data -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-commons</artifactId>
+				<version>1.9.2.RELEASE</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
