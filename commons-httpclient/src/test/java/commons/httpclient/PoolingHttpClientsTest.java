@@ -70,7 +70,7 @@ public class PoolingHttpClientsTest {
 	
 	@Test
 	public void testGet2() {
-		final String url = "http://www.xiangqu.com/advertise/qqAd?muid=472cba8f94b51247b47b63c95987f89d&click_time=1440379992&appid=575466337&click_id=f309e6a24b5b13493c9f610a9d2b83b8&app_type=ios&advertiser_id=200997";
+		final String url = "http://img.alicdn.com/imgextra/i3/TB15Zh_LpXXXXcJXXXXYXGcGpXX_M2.SS2";
 		
 		final HttpGet httpGet = PoolingHttpClients.createHttpGet(url, null);
 		
@@ -95,5 +95,14 @@ public class PoolingHttpClientsTest {
 		} else {
 			System.out.println(result);
 		}
+	}
+	
+	@Test
+	public void testProxyGet() {
+		final String url = "http://img.alicdn.com/imgextra/i2/2035355413/TB2XiqkbVXXXXb5XXXXXXXXXXXX_!!2035355413.jpg";
+		
+		final HttpInvokeResult result = PoolingHttpClients.proxyGet(url, 0, "115.159.69.96:8081");
+		
+		System.out.println(result);
 	}
 }
