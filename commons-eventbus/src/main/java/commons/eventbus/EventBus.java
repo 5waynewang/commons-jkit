@@ -16,9 +16,9 @@ import commons.eventbus.closure.ClosureExt;
  * @since 6:15:10 PM Apr 15, 2016
  */
 public interface EventBus {
-	Runnable registerObserver(Executor exec, String event, ClosureExt closure);
+	Runnable registerObserver(Executor exec, Object event, ClosureExt closure);
 
-	Runnable registerObserver(Executor exec, String event, Object target, String methodName);
+	Runnable registerObserver(Executor exec, Object event, Object target, String methodName);
 
-	void fireEvent(String event, Object... args);
+	void fireEvent(Object event, Object... args);
 }

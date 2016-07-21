@@ -4,6 +4,7 @@
 package commons.eventbus;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,11 +36,22 @@ public class DefaultEventBus implements EventBus {
 
 	private final Log log = LogFactory.getLog(getClass());
 
+	private static final AtomicInteger index = new AtomicInteger(0);
+
 	private ExecutorService mainExecutor = null;
 
 	private static class ClosureExSet {
 		// 主执行器(mainExecutor)是单线程，所以这里是线程安全的
-		private Map<UUID, ClosureExt> closures = new HashMap<UUID, ClosureExt>();
+		private final Map<UUID, ClosureExt> closures;
+
+		private ClosureExSet(boolean isOrdered) {
+			if (isOrdered) {
+				this.closures = new LinkedHashMap<>();
+			}
+			else {
+				this.closures = new HashMap<>();
+			}
+		}
 
 		public void add(UUID uuid, ClosureExt closure) {
 			closures.put(uuid, closure);
@@ -65,37 +78,44 @@ public class DefaultEventBus implements EventBus {
 		}
 	}
 
-	private Map<String, ClosureExSet> closureSet = new HashMap<String, ClosureExSet>();
+	private Map<Object, ClosureExSet> closureSet = new HashMap<Object, ClosureExSet>();
+
+	private boolean isOrdered;// ClosureExSet 是否有序
 
 	public DefaultEventBus() {
-		mainExecutor = Executors.newFixedThreadPool(1, new ThreadFactory() {
+		this(false);
+	}
+
+	public DefaultEventBus(boolean isOrdered) {
+		this.isOrdered = isOrdered;
+		this.mainExecutor = Executors.newFixedThreadPool(1, new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
-				return new Thread(r, "EventBusMainThread");
+				return new Thread(r, "EventBusMainThread" + index.getAndIncrement());
 			}
 		});
 	}
 
-	private ClosureExSet getOrCreateClosureExSet(String event) {
+	private ClosureExSet getOrCreateClosureExSet(Object event) {
 		ClosureExSet set = closureSet.get(event);
 
 		if (null == set) {
-			set = new ClosureExSet();
+			set = new ClosureExSet(isOrdered);
 			closureSet.put(event, set);
 		}
 
 		return set;
 	}
 
-	private ClosureExSet getClosureExSet(String event) {
+	private ClosureExSet getClosureExSet(Object event) {
 		return closureSet.get(event);
 	}
 
-	private void doRegisterObserver(final String event, final UUID id, final ClosureExt closure) {
+	private void doRegisterObserver(final Object event, final UUID id, final ClosureExt closure) {
 		getOrCreateClosureExSet(event).add(id, closure);
 	}
 
-	private void doRemoveObserver(final String event, final UUID id) {
+	private void doRemoveObserver(final Object event, final UUID id) {
 		ClosureExSet set = getClosureExSet(event);
 
 		if (null != set) {
@@ -104,7 +124,7 @@ public class DefaultEventBus implements EventBus {
 	}
 
 	@Override
-	public Runnable registerObserver(final Executor exec, final String event, final ClosureExt closure) {
+	public Runnable registerObserver(final Executor exec, final Object event, final ClosureExt closure) {
 
 		final FunctorAsync async = new FunctorAsync();
 		async.setExecutor(exec);
@@ -136,13 +156,13 @@ public class DefaultEventBus implements EventBus {
 	}
 
 	@Override
-	public Runnable registerObserver(final Executor exec, final String event, final Object target,
+	public Runnable registerObserver(final Executor exec, final Object event, final Object target,
 			final String methodName) {
 
 		return registerObserver(exec, event, new Functor(target, methodName));
 	}
 
-	private void doFireEvent(final String event, final Object... args) {
+	private void doFireEvent(final Object event, final Object... args) {
 		ClosureExSet set = this.getClosureExSet(event);
 		if (null != set) {
 			set.execute(args);
@@ -155,7 +175,7 @@ public class DefaultEventBus implements EventBus {
 	}
 
 	@Override
-	public void fireEvent(final String event, final Object... args) {
+	public void fireEvent(final Object event, final Object... args) {
 		this.mainExecutor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -174,19 +194,19 @@ public class DefaultEventBus implements EventBus {
 		}
 	}
 
-	private Map<String, String> doGetAllEvents() {
-		Map<String, String> ret = new HashMap<String, String>();
-		for (Map.Entry<String, ClosureExSet> entry : this.closureSet.entrySet()) {
+	private Map<Object, String> doGetAllEvents() {
+		Map<Object, String> ret = new HashMap<Object, String>();
+		for (Map.Entry<Object, ClosureExSet> entry : this.closureSet.entrySet()) {
 			ret.put(entry.getKey(), entry.getValue().toString());
 		}
 
 		return ret;
 	}
 
-	public Map<String, String> getAllEvents() throws InterruptedException, ExecutionException {
-		return this.mainExecutor.submit(new Callable<Map<String, String>>() {
+	public Map<Object, String> getAllEvents() throws InterruptedException, ExecutionException {
+		return this.mainExecutor.submit(new Callable<Map<Object, String>>() {
 			@Override
-			public Map<String, String> call() throws Exception {
+			public Map<Object, String> call() throws Exception {
 				return doGetAllEvents();
 			}
 		}).get();

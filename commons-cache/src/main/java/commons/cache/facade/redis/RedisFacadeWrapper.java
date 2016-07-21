@@ -22,7 +22,7 @@ import commons.cache.operation.CasOperation;
  */
 public class RedisFacadeWrapper implements RedisFacade {
 
-	private RedisFacade wrapper;
+	private volatile RedisFacade wrapper;
 
 	public RedisFacadeWrapper(RedisFacade wrapper) {
 		setWrapper(wrapper);
