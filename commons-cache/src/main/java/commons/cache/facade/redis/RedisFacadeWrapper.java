@@ -22,13 +22,13 @@ import commons.cache.operation.CasOperation;
  */
 public class RedisFacadeWrapper implements RedisFacade {
 
-	private volatile RedisFacade wrapper;
+	private RedisFacade wrapper;
 
 	public RedisFacadeWrapper(RedisFacade wrapper) {
-		setWrapper(wrapper);
+		this.wrapper = wrapper;
 	}
 
-	public void setWrapper(RedisFacade wrapper) {
+	public synchronized void setWrapper(RedisFacade wrapper) {
 		this.wrapper = wrapper;
 	}
 
@@ -87,23 +87,23 @@ public class RedisFacadeWrapper implements RedisFacade {
 	}
 
 	@Override
-	public void delete(String key) {
-		wrapper.delete(key);
+	public Integer delete(String key) {
+		return wrapper.delete(key);
 	}
 
 	@Override
-	public void deleteQuietly(String key) {
-		wrapper.deleteQuietly(key);
+	public Integer deleteQuietly(String key) {
+		return wrapper.deleteQuietly(key);
 	}
 
 	@Override
-	public void delete(Collection<String> keys) {
-		wrapper.delete(keys);
+	public Integer delete(Collection<String> keys) {
+		return wrapper.delete(keys);
 	}
 
 	@Override
-	public void deleteQuietly(Collection<String> keys) {
-		wrapper.deleteQuietly(keys);
+	public Integer deleteQuietly(Collection<String> keys) {
+		return wrapper.deleteQuietly(keys);
 	}
 
 	@Override
@@ -529,5 +529,15 @@ public class RedisFacadeWrapper implements RedisFacade {
 	@Override
 	public void destroy() {
 		wrapper.destroy();
+	}
+	
+	@Override
+	public <V> void publish(String topic, V message) {
+		wrapper.publish(topic, message);
+	}
+	
+	@Override
+	public <M> void subscribe(SubscribeListener<M> listener, String... topic) {
+		wrapper.subscribe(listener, topic);
 	}
 }

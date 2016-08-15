@@ -5,6 +5,7 @@ package commons.cache.facade.redis;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import com.google.common.collect.Lists;
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
+import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
@@ -190,11 +192,11 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public void delete(String key) {
+	public Integer delete(String key) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			this.jedisCluster.del(rawKey);
+			return affectedRowsToInteger(this.jedisCluster.del(rawKey));
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:del", e);
@@ -202,15 +204,14 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public void delete(Collection<String> keys) {
+	public Integer delete(Collection<String> keys) {
 		if (keys == null || keys.isEmpty()) {
-			return;
+			return 0;
 		}
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys.toArray(new String[] {}));
 			if (rawKeys.length == 1) {
-				this.jedisCluster.del(rawKeys);
-				return;
+				return affectedRowsToInteger(this.jedisCluster.del(rawKeys));
 			}
 			/**
 			 * 绕过 redis.clients.jedis.JedisClusterCommand.run(int keyCount, String... keys)
@@ -218,11 +219,16 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 			final List<Pair<List<String>, List<byte[]>>> slotsList = this.splitKeyBySlot(keys.toArray(new String[] {}),
 					rawKeys);
 
+			int affectedRows = 0;
 			for (Pair<List<String>, List<byte[]>> slots : slotsList) {
 				final byte[][] rks = slots.getRight().toArray(new byte[][] {});
 
-				this.jedisCluster.del(rks);
+				final Long ar = this.jedisCluster.del(rks);
+				if (ar != null) {
+					affectedRows += ar.intValue();
+				}
 			}
+			return affectedRows;
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:del", e);
@@ -963,6 +969,46 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:get", e);
+		}
+	}
+
+	@Override
+	public <V> void publish(String topic, V message) {
+		try {
+			final byte[] rawKey = this.serializeKey(topic);
+
+			final byte[] rawValue = this.serializeValue(message);
+
+			this.jedisCluster.publish(rawKey, rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:publish(" + topic + ", " + message + ")", e);
+		}
+	}
+
+	@Override
+	public <M> void subscribe(final SubscribeListener<M> listener, final String... topic) {
+		try {
+			final byte[][] rawKeys = this.serializeKeys(topic);
+
+			this.jedisCluster.subscribe(new BinaryJedisPubSub() {
+				@Override
+				public void onMessage(byte[] channel, byte[] message) {
+					try {
+						final String topic = deserializeKey(channel);
+						final M m = deserializeValue(message);
+
+						listener.onMessage(topic, m);
+					}
+					catch (Exception e) {
+						logger.error("redis:subscribe(" + Arrays.toString(topic) + "), error onMessage:("
+								+ Arrays.toString(channel) + ", " + Arrays.toString(message) + ")", e);
+					}
+				}
+			}, rawKeys);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:subscribe(" + Arrays.toString(topic) + ")", e);
 		}
 	}
 }

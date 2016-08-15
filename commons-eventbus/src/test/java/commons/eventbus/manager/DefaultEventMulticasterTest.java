@@ -4,14 +4,21 @@
 package commons.eventbus.manager;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import commons.eventbus.RedisEventBus;
 import commons.eventbus.closure.EventListenerAdapter;
+import commons.eventbus.multicaster.DefaultEventMulticaster;
+import redis.clients.jedis.BinaryJedisCluster;
+import redis.clients.jedis.HostAndPort;
 
 /**
  * <pre>
@@ -21,11 +28,36 @@ import commons.eventbus.closure.EventListenerAdapter;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 1:21:34 PM Jul 21, 2016
  */
-public class DefaultEventBusManagerTest {
-	DefaultEventBusManager ebm = new DefaultEventBusManager();
+public class DefaultEventMulticasterTest {
+	String profile = "dev";
+	
+	DefaultEventMulticaster ebm;
 
 	@Before
 	public void before() {
+//		ebm = new DefaultEventMulticaster();
+		
+		final String clusters;
+		if (StringUtils.endsWithIgnoreCase("online", profile)) {
+			clusters = "10.18.10.206:6379 10.18.10.207:6379 10.18.10.208:6379 10.18.10.209:6379 10.18.10.234:6379 10.18.10.236:6379";
+		}
+		else if (StringUtils.endsWithIgnoreCase("pre", profile)) {
+			clusters = "10.18.10.127:6379 10.18.10.127:6479 10.18.10.127:6579";
+		}
+		else if (StringUtils.endsWithIgnoreCase("test", profile)) {
+			clusters = "10.8.100.129:6379 10.8.100.129:6479 10.8.100.129:6579";
+		}
+		else {
+			clusters = "10.8.100.180:7000 10.8.100.180:7001 10.8.100.180:7002";
+		}
+		Set<HostAndPort> nodes = new HashSet<HostAndPort>();
+		for (String str : clusters.split("[,\\s\\t]+")) {
+			final String[] arr = str.split(":");
+
+			nodes.add(new HostAndPort(arr[0], Integer.parseInt(arr[1])));
+		}
+		BinaryJedisCluster jedisCluster = new BinaryJedisCluster(nodes);
+		ebm = new DefaultEventMulticaster(new RedisEventBus(jedisCluster));
 	}
 
 	@Test
@@ -50,14 +82,14 @@ public class DefaultEventBusManagerTest {
 				}
 			};
 
-			ebm.registerListener(event, listener);
+			ebm.addListener(event, listener);
 
 			if (index == removedIndex) {
 				removeListener = listener;
 			}
 		}
 
-		ebm.fireEvent(event, 1, 2, 3);
+		ebm.multicastEvent(event, 1, 2, 3);
 
 		final long start = System.nanoTime();
 		cdl.await(1, TimeUnit.SECONDS);
@@ -69,7 +101,7 @@ public class DefaultEventBusManagerTest {
 
 		System.out.println("remove listener " + removedIndex);
 
-		ebm.fireEvent(event, 1, 2, 3);
+		ebm.multicastEvent(event, 1, 2, 3);
 
 		final long start2 = System.nanoTime();
 		cdl.await();

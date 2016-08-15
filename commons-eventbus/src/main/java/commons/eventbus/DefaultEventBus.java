@@ -34,13 +34,13 @@ import commons.eventbus.closure.FunctorAsync;
  */
 public class DefaultEventBus implements EventBus {
 
-	private final Log log = LogFactory.getLog(getClass());
+	protected final Log log = LogFactory.getLog(getClass());
 
 	private static final AtomicInteger index = new AtomicInteger(0);
 
 	private ExecutorService mainExecutor = null;
 
-	private static class ClosureExSet {
+	static class ClosureExSet {
 		// 主执行器(mainExecutor)是单线程，所以这里是线程安全的
 		private final Map<UUID, ClosureExt> closures;
 
@@ -96,26 +96,31 @@ public class DefaultEventBus implements EventBus {
 		});
 	}
 
-	private ClosureExSet getOrCreateClosureExSet(Object event) {
+	protected ClosureExSet createClosureExSet(Object event) {
+		ClosureExSet set = new ClosureExSet(isOrdered);
+		closureSet.put(event, set);
+		return set;
+	}
+
+	protected ClosureExSet getOrCreateClosureExSet(Object event) {
 		ClosureExSet set = closureSet.get(event);
 
 		if (null == set) {
-			set = new ClosureExSet(isOrdered);
-			closureSet.put(event, set);
+			set = createClosureExSet(event);
 		}
 
 		return set;
 	}
 
-	private ClosureExSet getClosureExSet(Object event) {
+	protected ClosureExSet getClosureExSet(Object event) {
 		return closureSet.get(event);
 	}
 
-	private void doRegisterObserver(final Object event, final UUID id, final ClosureExt closure) {
+	protected void doRegisterObserver(final Object event, final UUID id, final ClosureExt closure) {
 		getOrCreateClosureExSet(event).add(id, closure);
 	}
 
-	private void doRemoveObserver(final Object event, final UUID id) {
+	protected void doRemoveObserver(final Object event, final UUID id) {
 		ClosureExSet set = getClosureExSet(event);
 
 		if (null != set) {
@@ -162,15 +167,13 @@ public class DefaultEventBus implements EventBus {
 		return registerObserver(exec, event, new Functor(target, methodName));
 	}
 
-	private void doFireEvent(final Object event, final Object... args) {
+	protected void doFireEvent(final Object event, final Object... args) {
 		ClosureExSet set = this.getClosureExSet(event);
 		if (null != set) {
 			set.execute(args);
 		}
-		else {
-			if (log.isDebugEnabled()) {
-				log.debug("event [" + event + "] not found any matched closure!");
-			}
+		else if (log.isDebugEnabled()) {
+			log.debug("event [" + event + "] not found any matched closure!");
 		}
 	}
 

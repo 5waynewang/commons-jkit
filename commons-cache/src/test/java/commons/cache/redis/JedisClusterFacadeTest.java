@@ -5,6 +5,7 @@ package commons.cache.redis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +17,7 @@ import redis.clients.util.JedisClusterCRC16;
 import redis.clients.util.SafeEncoder;
 import commons.cache.config.RedisConfig;
 import commons.cache.facade.redis.JedisClusterFacade;
+import commons.cache.facade.redis.SubscribeListener;
 
 /**
  * <pre>
@@ -35,6 +37,35 @@ public class JedisClusterFacadeTest {
 		final RedisConfig redisConfig = new RedisConfig();
 		redisConfig.setClusters("10.8.100.129:6379 10.8.100.129:6479 10.8.100.129:6579");
 		this.testedObject = new JedisClusterFacade(redisConfig);
+	}
+	
+	@Test
+	public void testPublishAndSubcribe() throws Exception {
+		final String topic = "lucifer_test_publishAndSubcribe";
+
+		final int count = 10;
+		final CountDownLatch cdl = new CountDownLatch(count);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				testedObject.subscribe(new SubscribeListener<String>() {
+					@Override
+					public void onMessage(String topic, String message) {
+						try {
+							System.out.println("topic: " + topic + ", message: " + message);
+						}
+						finally {
+							cdl.countDown();
+						}
+					}
+				}, topic);
+			}
+		}).start();
+		for (int i = 0; i < count; i++) {
+			testedObject.publish(topic, "message" + i);
+		}
+
+		cdl.await();
 	}
 
 	@Test

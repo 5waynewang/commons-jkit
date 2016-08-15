@@ -126,22 +126,24 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 	}
 
 	@Override
-	public void deleteQuietly(String key) {
+	public Integer deleteQuietly(String key) {
 		try {
-			this.delete(key);
+			return this.delete(key);
 		}
 		catch (Exception e) {
 			logger.warn("redis:del", e);
+			return null;
 		}
 	}
 
 	@Override
-	public void deleteQuietly(Collection<String> keys) {
+	public Integer deleteQuietly(Collection<String> keys) {
 		try {
-			this.delete(keys);
+			return this.delete(keys);
 		}
 		catch (Exception e) {
 			logger.warn("redis:del", e);
+			return null;
 		}
 	}
 
@@ -547,5 +549,12 @@ public abstract class AbstractRedisFacade implements RedisFacade {
 			logger.warn("redis:get", e);
 			return null;
 		}
+	}
+	
+	Integer affectedRowsToInteger(Long affectedRows) {
+		if (affectedRows == null) {
+			return null;
+		}
+		return affectedRows.intValue();
 	}
 }

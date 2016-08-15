@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import commons.cache.facade.redis.SubscribeListener;
+
 /**
  * <pre>
  *
@@ -204,4 +206,20 @@ public interface RedisFacade extends CacheFacade {
 	Long getNoIncr(String key);
 
 	Long getNoIncrQuietly(String key);
+	
+	/**
+	 * 发布一个消息给订阅者
+	 * 
+	 * @param topic 消息的主题
+	 * @param message 消息的内容
+	 */
+	<V> void publish(String topic, V message);
+	
+	/**
+	 * 订阅消息
+	 * 
+	 * @param listener 监听处理类
+	 * @param topic 消息的主题
+	 */
+	<M> void subscribe(SubscribeListener<M> listener, String... topic);
 }

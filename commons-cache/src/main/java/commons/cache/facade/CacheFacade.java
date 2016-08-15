@@ -39,17 +39,20 @@ public interface CacheFacade {
 
 	<V> void setQuietly(String key, V value, long timeout, TimeUnit unit);
 
-	void delete(String key);
+	/**
+	 * 返回受影响的行数
+	 */
+	Integer delete(String key);
 
-	void deleteQuietly(String key);
+	Integer deleteQuietly(String key);
 	
 //	void delete(String[] key);
 //
 //	void deleteQuietly(String[] key);
 
-	void delete(Collection<String> keys);
+	Integer delete(Collection<String> keys);
 
-	void deleteQuietly(Collection<String> keys);
+	Integer deleteQuietly(Collection<String> keys);
 
 	Boolean expire(String key, long timeout, TimeUnit unit);
 

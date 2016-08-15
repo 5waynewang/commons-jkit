@@ -4,6 +4,7 @@
 package commons.cache.facade.redis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -276,12 +278,12 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public void delete(String key) {
+	public Integer delete(String key) {
 		final Jedis resource = this.getResource();
 		try {
 			final byte[] rawKey = this.serializeKey(key);
 
-			resource.del(rawKey);
+			return affectedRowsToInteger(resource.del(rawKey));
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:del", e);
@@ -292,15 +294,15 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public void delete(Collection<String> keys) {
+	public Integer delete(Collection<String> keys) {
 		if (keys == null || keys.isEmpty()) {
-			return;
+			return 0;
 		}
 		final Jedis resource = this.getResource();
 		try {
 			final byte[][] rawKeys = this.serializeKeys(keys.toArray(new String[] {}));
 
-			resource.del(rawKeys);
+			return affectedRowsToInteger(resource.del(rawKeys));
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:del", e);
@@ -1164,6 +1166,48 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 		finally {
 			this.returnResource(resource);
+		}
+	}
+	
+	@Override
+	public <V> void publish(String topic, V message) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(topic);
+
+			final byte[] rawValue = this.serializeValue(message);
+
+			resource.publish(rawKey, rawValue);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:publish(" + topic + ", " + message + ")", e);
+		}
+	}
+
+	@Override
+	public <M> void subscribe(final SubscribeListener<M> listener, final String... topic) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[][] rawKeys = this.serializeKeys(topic);
+
+			resource.subscribe(new BinaryJedisPubSub() {
+				@Override
+				public void onMessage(byte[] channel, byte[] message) {
+					try {
+						final String topic = deserializeKey(channel);
+						final M m = deserializeValue(message);
+
+						listener.onMessage(topic, m);
+					}
+					catch (Exception e) {
+						logger.error("redis:subscribe(" + Arrays.toString(topic) + "), error onMessage:("
+								+ Arrays.toString(channel) + ", " + Arrays.toString(message) + ")", e);
+					}
+				}
+			}, rawKeys);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:subscribe(" + Arrays.toString(topic) + ")", e);
 		}
 	}
 }

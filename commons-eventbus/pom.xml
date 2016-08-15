@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.21-SNAPSHOT</version>
+		<version>0.22-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>commons-eventbus</artifactId>
@@ -12,13 +12,26 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>commons-lang</artifactId>
+			<artifactId>commons-serialization</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- junit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<!-- jedis -->
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- hessian -->
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>hessian</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

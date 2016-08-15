@@ -11,7 +11,7 @@ package commons.eventbus.closure;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 1:17:01 PM Jul 21, 2016
  */
-public abstract class EventListenerAdapter implements ClosureExt {
+public abstract class EventListenerAdapter implements EventListener {
 	private boolean canceled;
 
 	public boolean isCanceled() {
