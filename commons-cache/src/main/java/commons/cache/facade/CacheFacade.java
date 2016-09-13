@@ -88,8 +88,6 @@ public interface CacheFacade {
 
 	Long decrQuietly(String key, long delta, long timeout, TimeUnit unit);
 
-	<V> Boolean cas(String key, CasOperation<V> casOperation);
-
 	<V> Boolean cas(String key, CasOperation<V> casOperation, long timeout, TimeUnit unit);
 	
 	Boolean exists(String key);

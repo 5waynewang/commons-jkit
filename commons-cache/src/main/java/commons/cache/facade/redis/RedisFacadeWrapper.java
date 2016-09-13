@@ -22,13 +22,13 @@ import commons.cache.operation.CasOperation;
  */
 public class RedisFacadeWrapper implements RedisFacade {
 
-	private RedisFacade wrapper;
+	private volatile RedisFacade wrapper;
 
 	public RedisFacadeWrapper(RedisFacade wrapper) {
 		this.wrapper = wrapper;
 	}
 
-	public synchronized void setWrapper(RedisFacade wrapper) {
+	public void setWrapper(RedisFacade wrapper) {
 		this.wrapper = wrapper;
 	}
 
@@ -167,11 +167,6 @@ public class RedisFacadeWrapper implements RedisFacade {
 	}
 
 	@Override
-	public <V> Boolean cas(String key, CasOperation<V> casOperation) {
-		return wrapper.cas(key, casOperation);
-	}
-
-	@Override
 	public <V> Boolean cas(String key, CasOperation<V> casOperation, long timeout, TimeUnit unit) {
 		return wrapper.cas(key, casOperation, timeout, unit);
 	}
@@ -257,6 +252,16 @@ public class RedisFacadeWrapper implements RedisFacade {
 	}
 
 	@Override
+	public <V> Long rpushx(String key, V... value) {
+		return wrapper.rpushx(key, value);
+	}
+
+	@Override
+	public <V> Long rpushxQuietly(String key, V... value) {
+		return wrapper.rpushxQuietly(key, value);
+	}
+
+	@Override
 	public <V> Long lpush(String key, V... value) {
 		return wrapper.lpush(key, value);
 	}
@@ -264,6 +269,16 @@ public class RedisFacadeWrapper implements RedisFacade {
 	@Override
 	public <V> Long lpushQuietly(String key, V... value) {
 		return wrapper.lpushQuietly(key, value);
+	}
+
+	@Override
+	public <V> Long lpushx(String key, V... value) {
+		return wrapper.lpushx(key, value);
+	}
+
+	@Override
+	public <V> Long lpushxQuietly(String key, V... value) {
+		return wrapper.lpushxQuietly(key, value);
 	}
 
 	@Override
@@ -530,14 +545,19 @@ public class RedisFacadeWrapper implements RedisFacade {
 	public void destroy() {
 		wrapper.destroy();
 	}
-	
+
 	@Override
 	public <V> void publish(String topic, V message) {
 		wrapper.publish(topic, message);
 	}
-	
+
 	@Override
 	public <M> void subscribe(SubscribeListener<M> listener, String... topic) {
 		wrapper.subscribe(listener, topic);
+	}
+
+	@Override
+	public Object eval(String script, int keyCount, String... params) {
+		return wrapper.eval(script, keyCount, params);
 	}
 }

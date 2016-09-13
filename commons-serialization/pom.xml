@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>commons-jkit</groupId>
 		<artifactId>commons-jkit</artifactId>
-		<version>0.22-SNAPSHOT</version>
+		<version>0.23-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>commons-serialization</artifactId>

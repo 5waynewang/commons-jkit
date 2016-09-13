@@ -109,8 +109,8 @@ public class JedisFacadeTest {
 		final CountDownLatch cdl = new CountDownLatch(count * 2);
 
 		final int corePoolSize = 8;
-		final ExecutorService taskThreadExecutor = Executors.newFixedThreadPool(corePoolSize, new NamedThreadFactory(
-				"TakeThread_"));
+		final ExecutorService taskThreadExecutor = Executors.newFixedThreadPool(corePoolSize,
+				new NamedThreadFactory("TakeThread_"));
 		for (int i = 0; i < corePoolSize; i++) {
 			taskThreadExecutor.submit(new Runnable() {
 				@Override
@@ -238,7 +238,7 @@ public class JedisFacadeTest {
 							public int casMaxTries() {
 								return 0;
 							}
-						});
+						}, 1, TimeUnit.MINUTES);
 						System.out.println(Thread.currentThread().getName() + " " + ret);
 					}
 					finally {

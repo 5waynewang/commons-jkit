@@ -92,9 +92,17 @@ public interface RedisFacade extends CacheFacade {
 
 	<V> Long rpushQuietly(String key, V... value);
 
+	<V> Long rpushx(String key, V... value);
+
+	<V> Long rpushxQuietly(String key, V... value);
+
 	<V> Long lpush(String key, V... value);
 
 	<V> Long lpushQuietly(String key, V... value);
+
+	<V> Long lpushx(String key, V... value);
+
+	<V> Long lpushxQuietly(String key, V... value);
 
 	<V> V lpop(String key);
 
@@ -206,7 +214,7 @@ public interface RedisFacade extends CacheFacade {
 	Long getNoIncr(String key);
 
 	Long getNoIncrQuietly(String key);
-	
+
 	/**
 	 * 发布一个消息给订阅者
 	 * 
@@ -214,7 +222,7 @@ public interface RedisFacade extends CacheFacade {
 	 * @param message 消息的内容
 	 */
 	<V> void publish(String topic, V message);
-	
+
 	/**
 	 * 订阅消息
 	 * 
@@ -222,4 +230,6 @@ public interface RedisFacade extends CacheFacade {
 	 * @param topic 消息的主题
 	 */
 	<M> void subscribe(SubscribeListener<M> listener, String... topic);
+
+	Object eval(String script, int keyCount, String... params);
 }

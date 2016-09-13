@@ -23,6 +23,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import commons.cache.config.RedisConfig;
+import commons.cache.exception.CacheException;
+import commons.cache.exception.CancelCasException;
+import commons.cache.operation.CasOperation;
+import commons.cache.serialization.CacheSerializable;
+import commons.cache.serialization.Hessian2Serializer;
+import commons.lang.ObjectUtils;
+import commons.lang.concurrent.NamedThreadFactory;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -31,12 +39,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.util.SafeEncoder;
-import commons.cache.config.RedisConfig;
-import commons.cache.exception.CacheException;
-import commons.cache.exception.CancelCasException;
-import commons.cache.operation.CasOperation;
-import commons.lang.ObjectUtils;
-import commons.lang.concurrent.NamedThreadFactory;
 
 /**
  * <pre>
@@ -46,15 +48,23 @@ import commons.lang.concurrent.NamedThreadFactory;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 3:07:34 PM Jul 9, 2015
  */
-public class JedisFacade extends Hessian2JedisFacade {
-	public JedisFacade(RedisConfig redisConfig) {
-		super(redisConfig);
-		this.init();
-	}
+public class JedisFacade extends AbstractRedisFacade {
+
+	private final RedisConfig redisConfig;
 
 	private JedisPoolConfig poolConfig;
 	private JedisPool jedisPool;
 	private ThreadPoolExecutor redisCasExecutor;
+
+	public JedisFacade(RedisConfig redisConfig) {
+		this(redisConfig, new Hessian2Serializer());
+	}
+
+	public JedisFacade(RedisConfig redisConfig, CacheSerializable serializer) {
+		super(serializer);
+		this.redisConfig = redisConfig;
+		this.init();
+	}
 
 	@Override
 	public <V> V get(String key) {
@@ -242,7 +252,8 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
-	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout, final TimeUnit unit) {
+	public <V> Boolean cas(final String key, final CasOperation<V> casOperation, final long timeout,
+			final TimeUnit unit) {
 		final AtomicBoolean abortStatus = new AtomicBoolean(false);
 		final FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
 			@Override
@@ -573,6 +584,24 @@ public class JedisFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
+	public <V> Long rpushx(String key, V... values) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawValues = this.serializeValues(values);
+
+			return resource.rpushx(rawKey, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:rpushx", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
 	public <V> Long lpush(String key, V... values) {
 		final Jedis resource = this.getResource();
 		try {
@@ -584,6 +613,24 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:lpush", e);
+		}
+		finally {
+			this.returnResource(resource);
+		}
+	}
+
+	@Override
+	public <V> Long lpushx(String key, V... values) {
+		final Jedis resource = this.getResource();
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawValues = this.serializeValues(values);
+
+			return resource.lpushx(rawKey, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:lpushx", e);
 		}
 		finally {
 			this.returnResource(resource);
@@ -1168,7 +1215,7 @@ public class JedisFacade extends Hessian2JedisFacade {
 			this.returnResource(resource);
 		}
 	}
-	
+
 	@Override
 	public <V> void publish(String topic, V message) {
 		final Jedis resource = this.getResource();
@@ -1208,6 +1255,17 @@ public class JedisFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:subscribe(" + Arrays.toString(topic) + ")", e);
+		}
+	}
+
+	@Override
+	public Object eval(String script, int keyCount, String... params) {
+		final Jedis resource = this.getResource();
+		try {
+			return resource.eval(script, keyCount, params);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:eval(" + script + ", " + Arrays.toString(params) + ")", e);
 		}
 	}
 }

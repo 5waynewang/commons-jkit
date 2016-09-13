@@ -32,7 +32,7 @@ import org.xml.sax.SAXParseException;
 public class MavenPomXmlVersionUpdater {
 
 	static final String rootDir = "E:\\github\\commons-jkit";
-	static final String newVersion = "0.22-SNAPSHOT";
+	static final String newVersion = "0.23-SNAPSHOT";
 
 	public static void main(String[] args) throws Exception {
 		updateVersion(new File(rootDir));

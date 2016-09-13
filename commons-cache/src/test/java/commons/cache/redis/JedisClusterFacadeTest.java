@@ -27,7 +27,7 @@ import commons.cache.facade.redis.SubscribeListener;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 5:16:08 PM Jul 9, 2015
  */
-@org.junit.Ignore
+//@org.junit.Ignore
 public class JedisClusterFacadeTest {
 
 	JedisClusterFacade testedObject;
@@ -38,7 +38,7 @@ public class JedisClusterFacadeTest {
 		redisConfig.setClusters("10.8.100.129:6379 10.8.100.129:6479 10.8.100.129:6579");
 		this.testedObject = new JedisClusterFacade(redisConfig);
 	}
-	
+
 	@Test
 	public void testPublishAndSubcribe() throws Exception {
 		final String topic = "lucifer_test_publishAndSubcribe";
@@ -76,6 +76,11 @@ public class JedisClusterFacadeTest {
 		Assert.assertTrue(testedObject.incr(key, 10) == 210);
 		Assert.assertTrue(testedObject.getNoIncr(key) == 210);
 		testedObject.delete(key);
+	}
+	
+	@Test
+	public void testDelete() {
+		testedObject.deleteQuietly("1111");
 	}
 
 	@Test
@@ -141,5 +146,35 @@ public class JedisClusterFacadeTest {
 		for (Map.Entry<String, Long> entry : results.entrySet()) {
 			Assert.assertEquals(entry.getValue().longValue(), results1.get(entry.getKey()).longValue());
 		}
+	}
+
+	@Test
+	public void testEval() {
+//		final StringBuilder script = new StringBuilder();
+//		script.append("redis.call('incr', KEYS[1])");
+//		script.append("return redis.call('set', KEYS[2], ARGV[1]);");
+//		script.append("return redis.call('set', KEYS[2], ARGV[1]);");
+		
+		final String script = 
+        "if (redis.call('exists', KEYS[1]) == 0) then " +
+        	"redis.call('set', KEYS[1], ARGV[1]); " +
+        "else " +
+	        "local pingtu = redis.call('get', KEYS[1]); " +
+	        "local v = bor(pingtu, ARGV[1]); " +
+	        "redis.call('set', KEYS[1], v); " +
+	    "end; ";
+//	    // +
+//	    "redis.call('incr', KEYS[2]); " +
+//	    // -
+//	    "redis.call('decr', KEYS[3]); " +
+//	    //
+//	    "return redis.call('pttl', KEYS[1]);";
+		
+		System.out.println(this.testedObject.getNoIncr("{pingtu}137070"));
+		
+		final Object result = this.testedObject.eval(script.toString(), 1, "{pingtu}137070", "2");
+//		final Object result = this.testedObject.eval(script.toString(), 2, "{pingtu}1counter", "{pingtu}137070", "4");
+		
+		System.out.println(result);
 	}
 }

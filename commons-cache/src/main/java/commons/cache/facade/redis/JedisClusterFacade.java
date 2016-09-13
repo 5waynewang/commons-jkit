@@ -24,6 +24,8 @@ import com.google.common.collect.Lists;
 import commons.cache.config.RedisConfig;
 import commons.cache.exception.CacheException;
 import commons.cache.operation.CasOperation;
+import commons.cache.serialization.CacheSerializable;
+import commons.cache.serialization.Hessian2Serializer;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -40,14 +42,21 @@ import redis.clients.util.SafeEncoder;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 3:07:34 PM Jul 9, 2015
  */
-public class JedisClusterFacade extends Hessian2JedisFacade {
-	public JedisClusterFacade(RedisConfig redisConfig) {
-		super(redisConfig);
-		this.init();
-	}
+public class JedisClusterFacade extends AbstractRedisFacade {
+	private final RedisConfig redisConfig;
 
 	private JedisPoolConfig poolConfig;
 	private JedisCluster jedisCluster;
+
+	public JedisClusterFacade(RedisConfig redisConfig) {
+		this(redisConfig, new Hessian2Serializer());
+	}
+
+	public JedisClusterFacade(RedisConfig redisConfig, CacheSerializable serializer) {
+		super(serializer);
+		this.redisConfig = redisConfig;
+		this.init();
+	}
 
 	@Override
 	public <V> V get(String key) {
@@ -440,6 +449,20 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 	}
 
 	@Override
+	public <V> Long rpushx(String key, V... values) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawValues = this.serializeValues(values);
+
+			return this.jedisCluster.rpushx(rawKey, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:rpushx", e);
+		}
+	}
+
+	@Override
 	public <V> Long lpush(String key, V... values) {
 		try {
 			final byte[] rawKey = this.serializeKey(key);
@@ -450,6 +473,20 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:lpush", e);
+		}
+	}
+
+	@Override
+	public <V> Long lpushx(String key, V... values) {
+		try {
+			final byte[] rawKey = this.serializeKey(key);
+
+			final byte[][] rawValues = this.serializeValues(values);
+
+			return this.jedisCluster.lpushx(rawKey, rawValues);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:lpushx", e);
 		}
 	}
 
@@ -1009,6 +1046,16 @@ public class JedisClusterFacade extends Hessian2JedisFacade {
 		}
 		catch (Exception e) {
 			throw new CacheException("redis:subscribe(" + Arrays.toString(topic) + ")", e);
+		}
+	}
+
+	@Override
+	public Object eval(String script, int keyCount, String... params) {
+		try {
+			return jedisCluster.eval(script, keyCount, params);
+		}
+		catch (Exception e) {
+			throw new CacheException("redis:eval(" + script + ", " + Arrays.toString(params) + ")", e);
 		}
 	}
 }

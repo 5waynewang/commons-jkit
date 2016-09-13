@@ -71,8 +71,18 @@ public class RedisEventBus extends DefaultEventBus implements EventBus {
 		}
 	}
 
+	/**
+	 * 分布式触发事件，通知所有机器的所有订阅
+	 */
 	@Override
-	protected void doFireEvent(Object event, Object... args) {
+	public void fireEvent(Object event, Object... args) {
 		jedisCluster.publish(serialize(event), serialize(args));
+	}
+
+	/**
+	 * 仅触发当前进程内的订阅事件
+	 */
+	public void fireEventOnlyCurrentProcess(Object event, Object... args) {
+		super.fireEvent(event, args);
 	}
 }

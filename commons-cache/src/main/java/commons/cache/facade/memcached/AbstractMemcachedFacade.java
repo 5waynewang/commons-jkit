@@ -3,7 +3,7 @@
  */
 package commons.cache.facade.memcached;
 
-import commons.cache.facade.CacheFacade;
+import commons.cache.facade.MemcachedFacade;
 
 /**
  * <pre>
@@ -13,6 +13,6 @@ import commons.cache.facade.CacheFacade;
  * @author Wayne.Wang<5waynewang@gmail.com>
  * @since 7:30:10 PM Jun 24, 2015
  */
-public abstract class AbstractMemcachedFacade implements CacheFacade {
+public abstract class AbstractMemcachedFacade implements MemcachedFacade {
 
 }
